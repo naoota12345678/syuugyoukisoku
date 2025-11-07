@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>修正履歴</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .history-item { border-left: 3px solid #007bff; padding-left: 15px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>修正履歴</h1>
+    <p>{{ company.name }} - {{ regulation.name }}</p>
+    <a href="/">← トップに戻る</a>
+    
+    <div style="margin-top: 20px;">
+        {% if history %}
+            {% for item in history %}
+            <div class="history-item">
+                <p><strong>{{ item.created_at }}</strong></p>
+                <p>{{ item.article_number }}: {{ item.modification_type }}</p>
+                <p>{{ item.reason }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>履歴がありません</p>
+        {% endif %}
+    </div>
+</body>
+</html>

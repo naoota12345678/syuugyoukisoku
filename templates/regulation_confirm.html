@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>規程確認 - 就業規則管理システム</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header { background: white; padding: 30px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #2c3e50; margin-bottom: 15px; font-size: 28px; }
+        .header-meta { color: #7f8c8d; font-size: 16px; }
+
+        .info-box { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3; }
+        .info-box h2 { color: #1976d2; font-size: 18px; margin-bottom: 10px; }
+        .info-box p { color: #34495e; line-height: 1.7; }
+
+        .preview { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; max-height: 600px; overflow-y: auto; }
+        .preview h3 { color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #3498db; }
+        .preview-text { white-space: pre-wrap; font-family: 'MS Mincho', serif; line-height: 1.8; color: #2c3e50; }
+
+        .actions { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .actions h3 { color: #2c3e50; margin-bottom: 20px; }
+        .action-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn { padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; text-decoration: none; display: inline-block; transition: all 0.3s; text-align: center; }
+        .btn-primary { background: #27ae60; color: white; flex: 1; min-width: 200px; }
+        .btn-primary:hover { background: #229954; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(39,174,96,0.3); }
+        .btn-secondary { background: #3498db; color: white; flex: 1; min-width: 200px; }
+        .btn-secondary:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(52,152,219,0.3); }
+        .btn-back { background: #95a5a6; color: white; }
+        .btn-back:hover { background: #7f8c8d; }
+
+        .option-card { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px solid transparent; transition: all 0.3s; margin-bottom: 15px; }
+        .option-card:hover { border-color: #3498db; background: white; }
+        .option-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .option-desc { color: #7f8c8d; font-size: 14px; line-height: 1.6; }
+
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-number { font-size: 32px; font-weight: bold; color: #3498db; }
+        .stat-label { color: #7f8c8d; font-size: 14px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 規程の確認</h1>
+            <div class="header-meta">{{ company.name }} - {{ regulation.name }}</div>
+        </div>
+
+        <div class="info-box">
+            <h2>✅ PDFからのテキスト抽出が完了しました</h2>
+            <p>
+                規程のテキストを抽出しました。以下の内容を確認して、次の操作を選択してください。<br>
+                <strong>「このまま保存」</strong>：Version 1として保存し、後で修正可能<br>
+                <strong>「AI検証を実行」</strong>：AIが法令チェックを行い、修正提案を作成
+            </p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ text_length|default(0) }}</div>
+                <div class="stat-label">抽出文字数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ tables|length }}</div>
+                <div class="stat-label">検出された表</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1</div>
+                <div class="stat-label">バージョン</div>
+            </div>
+        </div>
+
+        {% if tables %}
+        <div class="preview">
+            <h3>📊 検出された表（{{ tables|length }}個）</h3>
+            {% for table in tables %}
+            <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                <h4 style="color: #2c3e50; margin-bottom: 15px; font-size: 16px;">表 {{ loop.index }} (ページ {{ table.page }})</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; background: white;">
+                        <tbody>
+                            {% for row in table.data %}
+                            <tr>
+                                {% for cell in row %}
+                                <td style="border: 1px solid #dee2e6; padding: 8px 12px; {% if loop.index0 == 0 %}background: #e3f2fd; font-weight: bold;{% endif %}">
+                                    {{ cell }}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="preview">
+            <h3>📋 抽出されたテキスト（プレビュー）</h3>
+            <div class="preview-text">{{ raw_text[:2000] }}{% if raw_text|length > 2000 %}...{% endif %}</div>
+        </div>
+
+        <div class="actions">
+            <h3>次の操作を選択してください</h3>
+
+            <div class="option-card">
+                <div class="option-title">✅ このまま保存（推奨）</div>
+                <div class="option-desc">
+                    現在の内容をVersion 1として保存します。後からいつでもAI検証や修正が可能です。<br>
+                    まずはたたき台として保存し、必要に応じて後から修正するのがおすすめです。
+                </div>
+            </div>
+
+            <div class="option-card">
+                <div class="option-title">🤖 AI検証を実行</div>
+                <div class="option-desc">
+                    AIが労働基準法などの法令に基づいて内容をチェックし、修正提案を作成します。<br>
+                    処理に数分かかる場合があります。
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <form method="POST" action="/regulation/{{ regulation.id }}/save_draft" style="flex: 1; min-width: 200px;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        ✅ このまま保存してVersion 1を作成
+                    </button>
+                </form>
+
+                <form method="POST" action="/regulation/{{ regulation.id }}/validate" style="flex: 1; min-width: 200px;">
+                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                        🤖 AI検証を実行
+                    </button>
+                </form>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <a href="/" class="btn btn-back">← トップに戻る</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

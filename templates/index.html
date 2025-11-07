@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>就業規則管理システム</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: #f5f5f5; padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 40px; border-radius: 12px; margin-bottom: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 36px; margin-bottom: 15px; }
+        .header p { font-size: 18px; opacity: 0.9; }
+        .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .action-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; text-decoration: none; color: inherit; display: block; }
+        .action-card:hover { transform: translateY(-5px); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .action-card .icon { font-size: 48px; margin-bottom: 15px; }
+        .action-card h2 { color: #333; font-size: 24px; margin-bottom: 10px; }
+        .action-card p { color: #666; font-size: 14px; line-height: 1.6; }
+        .quick-links { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .quick-links h3 { color: #333; font-size: 20px; margin-bottom: 20px; }
+        .link-list { list-style: none; }
+        .link-list li { margin-bottom: 12px; }
+        .link-list a { color: #667eea; text-decoration: none; font-size: 16px; display: flex; align-items: center; gap: 10px; transition: all 0.2s; }
+        .link-list a:hover { color: #764ba2; transform: translateX(5px); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 就業規則管理システム</h1>
+            <p>就業規則のアップロード、AI検証、修正提案の管理を一元化</p>
+        </div>
+
+        <div class="actions">
+            <a href="/upload" class="action-card">
+                <div class="icon">📤</div>
+                <h2>新規アップロード</h2>
+                <p>PDFファイルをアップロードして就業規則を登録します。AIが自動で構造化と検証を行います。</p>
+            </a>
+
+            <a href="/admin/companies" class="action-card">
+                <div class="icon">⚙️</div>
+                <h2>会社管理</h2>
+                <p>登録されている会社を確認・削除します。重複した会社を整理できます。</p>
+            </a>
+        </div>
+
+        <div class="quick-links">
+            <h3>🏢 登録済み会社</h3>
+            {% if companies %}
+            <ul class="link-list">
+                {% for company in companies %}
+                <li>
+                    <a href="/regulations/{{ company.id }}">
+                        → {{ company.name }}
+                        <span style="color: #999; font-size: 12px;">({{ company.regulation_count }}件の規程)</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p style="color: #999; padding: 20px; text-align: center;">
+                まだ会社が登録されていません。<br>
+                上の「新規アップロード」からPDFをアップロードして始めましょう！
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

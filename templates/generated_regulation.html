@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>生成された規程</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .chapter { margin: 20px 0; }
+        .article { margin-left: 20px; padding: 10px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>生成された規程</h1>
+    <p>{{ company.name }}</p>
+    <a href="/">← トップに戻る</a>
+    
+    <div style="margin-top: 20px;">
+        <h2>{{ regulation.regulation_name }}</h2>
+        
+        {% if regulation.chapters %}
+            {% for chapter in regulation.chapters %}
+            <div class="chapter">
+                <h3>{{ chapter.number }} {{ chapter.title }}</h3>
+                {% for article in chapter.articles %}
+                <div class="article">
+                    <h4>{{ article.number }} {{ article.title }}</h4>
+                    <p>{{ article.content }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>規程が生成されませんでした</p>
+        {% endif %}
+    </div>
+</body>
+</html>

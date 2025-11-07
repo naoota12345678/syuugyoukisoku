@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ regulation.name }} - 就業規則管理システム</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: #f5f5f5; padding: 20px; line-height: 1.8; }
+        .header { background: white; padding: 30px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #2c3e50; margin-bottom: 15px; font-size: 28px; }
+        .header .meta { display: flex; gap: 30px; color: #7f8c8d; font-size: 14px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #ecf0f1; flex-wrap: wrap; }
+        .header .meta-item { display: flex; align-items: center; gap: 8px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .status-badge.active { background: #d4edda; color: #155724; }
+        .status-badge.draft { background: #fff3cd; color: #856404; }
+        .status-badge.submitted { background: #cce5ff; color: #004085; }
+
+        .actions { background: white; padding: 15px 30px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; text-decoration: none; display: inline-block; transition: all 0.2s; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #229954; }
+        .btn-submit { background: #17a2b8; color: white; }
+        .btn-submit:hover { background: #138496; }
+        .btn-back { background: #ecf0f1; color: #2c3e50; }
+        .btn-back:hover { background: #bdc3c7; }
+
+        .content-box { background: white; padding: 40px 50px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto; }
+
+        .chapter { margin-bottom: 50px; }
+        .chapter-title { font-size: 22px; font-weight: bold; color: #2c3e50; margin-bottom: 25px; padding-bottom: 12px; border-bottom: 3px solid #3498db; }
+
+        .article { margin-bottom: 35px; padding: 20px; background: #fafafa; border-left: 4px solid #3498db; border-radius: 4px; }
+        .article-header { font-size: 16px; font-weight: bold; color: #34495e; margin-bottom: 12px; }
+        .article-number { color: #3498db; margin-right: 8px; }
+        .article-content { color: #2c3e50; margin-bottom: 10px; white-space: pre-wrap; }
+        .article-items { margin-top: 15px; }
+        .article-item { margin-bottom: 8px; padding-left: 20px; color: #34495e; }
+
+        .no-content { text-align: center; padding: 60px 20px; color: #7f8c8d; }
+        .no-content-icon { font-size: 48px; margin-bottom: 20px; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .header, .actions, .btn { display: none; }
+            .content-box { box-shadow: none; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 {{ regulation.name }}
+            {% if current_version %}
+            <span style="font-size: 18px; color: #3498db; font-weight: normal; margin-left: 15px;">
+                (Version {{ current_version }}{% if versions and versions[0]['version'] == current_version %} - 最新{% endif %})
+            </span>
+            {% endif %}
+        </h1>
+        <div style="color: #34495e; font-size: 16px; margin-top: 10px;">{{ company.name }}</div>
+        <div class="meta">
+            <div class="meta-item">
+                <strong>ステータス:</strong>
+                <span class="status-badge {{ regulation.status }}">
+                    {% if regulation.status == 'active' %}✓ 確定{% else %}📝 下書き{% endif %}
+                </span>
+            </div>
+            <div class="meta-item"><strong>作成日:</strong> {{ regulation.created_at }}</div>
+            <div class="meta-item"><strong>更新日:</strong> {{ regulation.updated_at }}</div>
+            {% if versions %}
+            <div class="meta-item"><strong>総バージョン数:</strong> {{ versions|length }}版</div>
+            {% endif %}
+            {% if regulation.submitted_at %}
+            <div class="meta-item">
+                <strong>提出日:</strong>
+                <span class="status-badge submitted">✓ {{ regulation.submitted_at[:10] }}</span>
+            </div>
+            {% endif %}
+            {% if regulation.effective_date %}
+            <div class="meta-item">
+                <strong>施行日:</strong>
+                <span class="status-badge" style="background: #fff3cd; color: #856404;">🗓 {{ regulation.effective_date }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="actions">
+        <a href="/regulations/{{ company.id }}" class="btn btn-back">← 規程一覧に戻る</a>
+        <a href="/regulation/{{ regulation.id }}/history" class="btn btn-secondary">📜 バージョン履歴</a>
+        <button onclick="window.print()" class="btn btn-primary">🖨 印刷</button>
+        <button onclick="downloadPDF()" class="btn btn-success">📥 PDF保存</button>
+        <button onclick="openDateModal()" class="btn btn-submit">📅 提出日・施行日を設定</button>
+
+        {% if versions and versions|length > 1 %}
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+            <span style="color: #666; font-size: 14px;">バージョン履歴:</span>
+            <select onchange="if(this.value) window.location.href=this.value" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                {% for ver in versions %}
+                <option value="/regulation/{{ regulation.id }}/view/version/{{ ver['version'] }}" {% if ver['version'] == current_version %}selected{% endif %}>
+                    v{{ ver['version'] }}{% if loop.first %} (最新){% endif %} - {{ ver['created_at'][:10] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if tables %}
+    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+        <h2 style="color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #3498db;">📊 検出された表（{{ tables|length }}個）</h2>
+        {% for table in tables %}
+        <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+            <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 16px;">表 {{ loop.index }} (ページ {{ table.page }})</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: white; font-size: 14px;">
+                    <tbody>
+                        {% for row in table.data %}
+                        <tr>
+                            {% for cell in row %}
+                            <td style="border: 1px solid #dee2e6; padding: 10px 14px; {% if loop.first %}background: #e3f2fd; font-weight: bold; text-align: center;{% endif %}">
+                                {{ cell }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="content-box">
+        {% if content %}
+            {% for chapter in content %}
+            <div class="chapter">
+                <div class="chapter-title">{{ chapter.number }} {{ chapter.title }}</div>
+
+                {% for article in chapter.articles %}
+                <div class="article">
+                    <div class="article-header">
+                        <span class="article-number">{{ article.number }}</span>
+                        <span>（{{ article.title }}）</span>
+                    </div>
+
+                    {% if article.content %}
+                        {% if article.content is string %}
+                        <div class="article-content">{{ article.content }}</div>
+                        {% else %}
+                            {% for paragraph in article.content %}
+                            <div class="article-content">{{ paragraph }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% if article.items %}
+                    <div class="article-items">
+                        {% for item in article.items %}
+                        <div class="article-item">
+                            {% if item is mapping %}
+                            {{ item.number }} {{ item.text }}
+                            {% else %}
+                            {{ item }}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        {% else %}
+            {% if raw_text %}
+            <div style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                <strong>⚠️ お知らせ</strong><br>
+                PDFから抽出したテキストは正常に保存されていますが、章・条の構造解析が完了していません。<br>
+                元のテキストを以下に表示します。
+            </div>
+            <div style="white-space: pre-wrap; font-family: 'MS Mincho', serif; line-height: 1.8; padding: 20px; background: #fafafa; border-radius: 4px; border: 1px solid #dee2e6;">{{ raw_text }}</div>
+            {% else %}
+            <div class="no-content">
+                <div class="no-content-icon">📭</div>
+                <h2>規程内容が登録されていません</h2>
+                <p style="margin-top: 10px;">規程の内容がまだ保存されていないようです。</p>
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- 日付設定モーダル -->
+    <div id="dateModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-width: 500px; width: 90%;">
+            <h2 style="color: #2c3e50; margin-bottom: 20px; font-size: 22px;">📅 提出日・施行日の設定</h2>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: bold; color: #34495e; margin-bottom: 8px;">提出日</label>
+                <input type="date" id="submittedDate" value="{{ regulation.submitted_at[:10] if regulation.submitted_at else '' }}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <small style="color: #7f8c8d; display: block; margin-top: 5px;">労働基準監督署に提出した日付</small>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; color: #34495e; margin-bottom: 8px;">施行日</label>
+                <input type="date" id="effectiveDate" value="{{ regulation.effective_date if regulation.effective_date else '' }}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <small style="color: #7f8c8d; display: block; margin-top: 5px;">規程が実際に効力を持つ日付</small>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="saveDates()" style="flex: 1; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px;">
+                    ✓ 保存
+                </button>
+                <button onclick="closeDateModal()" style="flex: 1; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px;">
+                    キャンセル
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function downloadPDF() {
+            alert('PDF保存機能は準備中です。\n現在は印刷機能をご利用ください。');
+            // TODO: PDF生成APIを呼び出す
+        }
+
+        function openDateModal() {
+            document.getElementById('dateModal').style.display = 'flex';
+        }
+
+        function closeDateModal() {
+            document.getElementById('dateModal').style.display = 'none';
+        }
+
+        async function saveDates() {
+            const submittedDate = document.getElementById('submittedDate').value;
+            const effectiveDate = document.getElementById('effectiveDate').value;
+
+            if (!submittedDate && !effectiveDate) {
+                alert('提出日または施行日のいずれかを入力してください。');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/update_dates/{{ regulation.id }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        submitted_date: submittedDate || null,
+                        effective_date: effectiveDate || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✓ 日付を保存しました！');
+                    location.reload();
+                } else {
+                    alert('エラー: ' + (data.error || '不明なエラーが発生しました'));
+                }
+            } catch (error) {
+                alert('エラー: ' + error.message);
+            }
+        }
+
+        // モーダル外クリックで閉じる
+        document.getElementById('dateModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDateModal();
+            }
+        });
+    </script>
+</body>
+</html>

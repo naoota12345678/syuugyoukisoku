@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PDFアップロード</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        h1 { color: #333; }
+        .back-link { color: #007bff; text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .form-group { margin: 20px 0; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="file"] { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            padding: 12px 30px; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .success { color: green; padding: 10px; background: #d4edda; border-radius: 4px; }
+        .error { color: red; padding: 10px; background: #f8d7da; border-radius: 4px; }
+        .info { color: blue; padding: 10px; background: #d1ecf1; border-radius: 4px; }
+        #result { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← トップに戻る</a>
+    <h1>PDFアップロード</h1>
+    
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>会社の選択 *</label>
+            <div style="margin-bottom: 15px;">
+                <label style="display: inline; font-weight: normal;">
+                    <input type="radio" name="company_option" value="existing" id="existingCompany" checked>
+                    既存の会社を選択
+                </label>
+                <label style="display: inline; font-weight: normal; margin-left: 20px;">
+                    <input type="radio" name="company_option" value="new" id="newCompany">
+                    新規会社を作成
+                </label>
+            </div>
+
+            <div id="existingCompanyDiv">
+                <select name="company_id" id="companySelect" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">会社を選択してください</option>
+                    {% for company in companies %}
+                    <option value="{{ company.id }}">{{ company.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="newCompanyDiv" style="display: none;">
+                <input type="text" name="company_name" id="companyName" placeholder="株式会社〇〇" style="margin-bottom: 10px;">
+                <input type="text" name="company_address" id="companyAddress" placeholder="会社住所（任意）">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>規程名 *</label>
+            <input type="text" name="regulation_name" placeholder="就業規則" required>
+            <small style="color: #666; display: block; margin-top: 5px;">
+                例：「就業規則」「パートタイム就業規則」「育児・介護休業規程」など
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label>PDFファイル *</label>
+            <input type="file" name="pdf_file" accept=".pdf" required>
+        </div>
+
+        <button type="submit" id="submitBtn">アップロードして解析</button>
+    </form>
+    
+    <div id="result" style="display:none;"></div>
+    
+    <script>
+        // ラジオボタンの切り替え
+        document.getElementById('existingCompany').addEventListener('change', function() {
+            document.getElementById('existingCompanyDiv').style.display = 'block';
+            document.getElementById('newCompanyDiv').style.display = 'none';
+            document.getElementById('companySelect').required = true;
+            document.getElementById('companyName').required = false;
+        });
+
+        document.getElementById('newCompany').addEventListener('change', function() {
+            document.getElementById('existingCompanyDiv').style.display = 'none';
+            document.getElementById('newCompanyDiv').style.display = 'block';
+            document.getElementById('companySelect').required = false;
+            document.getElementById('companyName').required = true;
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const resultDiv = document.getElementById('result');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // ボタンを無効化
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'アップロード中...';
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p class="info">アップロード中です。しばらくお待ちください...</p>';
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // レスポンスのContent-Typeを確認
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        resultDiv.innerHTML = '<p class="success">✓ アップロード成功！AI検証を実行中...</p>';
+                        
+                        // リダイレクト
+                        if (data.redirect) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect;
+                            }, 1000);
+                        }
+                    } else {
+                        resultDiv.innerHTML = '<p class="error">エラー: ' + (data.error || '不明なエラー') + '</p>';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'アップロードして解析';
+                    }
+                } else {
+                    // JSONでない場合はHTMLエラーページ
+                    const text = await response.text();
+                    resultDiv.innerHTML = '<p class="error">サーバーエラーが発生しました。詳細はコンソールを確認してください。</p>';
+                    console.error('Server response:', text);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'アップロードして解析';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<p class="error">エラー: ' + error.message + '</p>';
+                console.error('Upload error:', error);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'アップロードして解析';
+            }
+        });
+    </script>
+</body>
+</html>

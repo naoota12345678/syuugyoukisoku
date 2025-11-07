@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Project specific
+database/
+uploads/
+*.db
+*.sqlite
+*.sqlite3
+
+# Google Cloud credentials (重要！)
+*.json
+!package.json
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+temp_*.txt
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

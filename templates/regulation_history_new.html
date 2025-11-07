@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>バージョン履歴 - {{ regulation.name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: #f5f5f5; padding: 20px; }
+
+        .header { background: white; padding: 30px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #2c3e50; margin-bottom: 10px; font-size: 28px; }
+        .header-meta { color: #7f8c8d; font-size: 16px; margin-top: 10px; }
+        .back-link { display: inline-block; color: #3498db; text-decoration: none; margin-bottom: 15px; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+
+        .summary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .summary h2 { font-size: 22px; margin-bottom: 15px; }
+        .summary-stats { display: flex; gap: 40px; margin-top: 20px; flex-wrap: wrap; }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-number { font-size: 36px; font-weight: bold; }
+        .stat-label { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+
+        /* タイムライン */
+        .timeline { position: relative; max-width: 1200px; margin: 0 auto; }
+        .timeline::before { content: ''; position: absolute; left: 30px; top: 0; bottom: 0; width: 3px; background: #e0e0e0; }
+
+        .timeline-item { position: relative; margin-bottom: 40px; padding-left: 80px; }
+        .timeline-dot { position: absolute; left: 19px; top: 0; width: 24px; height: 24px; border-radius: 50%; border: 4px solid #fff; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .timeline-dot.latest { background: #27ae60; }
+        .timeline-dot.version { background: #3498db; }
+
+        .version-card { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s; }
+        .version-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.15); transform: translateY(-2px); }
+
+        .version-header { padding: 20px 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .version-header.latest { background: linear-gradient(135deg, #27ae60 0%, #229954 100%); }
+        .version-header h3 { font-size: 20px; display: flex; align-items: center; gap: 12px; }
+        .version-badge { background: rgba(255,255,255,0.3); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .expand-icon { font-size: 20px; transition: transform 0.3s; }
+        .expand-icon.expanded { transform: rotate(180deg); }
+
+        .version-body { padding: 25px; display: none; }
+        .version-body.expanded { display: block; }
+
+        .version-meta { display: flex; gap: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .meta-item { display: flex; align-items: center; gap: 8px; color: #6c757d; font-size: 14px; }
+        .meta-item strong { color: #495057; }
+
+        .changes-section { margin-top: 20px; }
+        .changes-section h4 { color: #2c3e50; margin-bottom: 15px; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+
+        .change-item { background: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .change-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .change-article { font-weight: bold; color: #2c3e50; font-size: 16px; }
+        .change-type { background: #e3f2fd; color: #1976d2; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+
+        .change-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 12px; }
+        .change-panel { background: white; border: 1px solid #dee2e6; border-radius: 6px; padding: 12px; font-size: 14px; line-height: 1.7; }
+        .change-panel-title { font-weight: bold; margin-bottom: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .change-panel-title.before { color: #856404; }
+        .change-panel-title.after { color: #155724; }
+
+        .change-reason { background: white; padding: 12px; border-radius: 6px; margin-top: 10px; border-left: 3px solid #6c757d; }
+        .change-reason-title { font-weight: bold; color: #495057; font-size: 13px; margin-bottom: 6px; }
+        .change-reason-text { color: #6c757d; font-size: 13px; line-height: 1.6; }
+
+        .no-changes { text-align: center; padding: 30px; color: #999; font-style: italic; }
+
+        .view-version-btn { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; text-decoration: none; display: inline-block; transition: all 0.2s; }
+        .view-version-btn:hover { background: #2980b9; }
+
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .empty-icon { font-size: 64px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <a href="/regulation/{{ regulation.id }}/view" class="back-link">← 規程内容に戻る</a>
+
+    <div class="header">
+        <h1>📚 バージョン履歴</h1>
+        <div class="header-meta">{{ company.name }} - {{ regulation.name }}</div>
+    </div>
+
+    <div class="summary">
+        <h2>バージョン管理サマリー</h2>
+        <div class="summary-stats">
+            <div class="stat-item">
+                <div class="stat-number">{{ version_details|length }}</div>
+                <div class="stat-label">総バージョン数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ modifications|selectattr('status', 'equalto', 'applied')|list|length }}</div>
+                <div class="stat-label">適用済み修正</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ version_details[0].created_at[:10] if version_details else '-' }}</div>
+                <div class="stat-label">最終更新日</div>
+            </div>
+        </div>
+    </div>
+
+    {% if version_details %}
+    <div class="timeline">
+        {% for ver in version_details %}
+        <div class="timeline-item">
+            <div class="timeline-dot {{ 'latest' if ver.is_latest else 'version' }}"></div>
+
+            <div class="version-card">
+                <div class="version-header {{ 'latest' if ver.is_latest else '' }}" onclick="toggleVersion({{ ver.version }})">
+                    <h3>
+                        Version {{ ver.version }}
+                        {% if ver.is_latest %}
+                        <span class="version-badge">最新版</span>
+                        {% endif %}
+                    </h3>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="font-size: 14px; opacity: 0.9;">{{ ver.created_at }}</span>
+                        <span class="expand-icon" id="icon-{{ ver.version }}">▼</span>
+                    </div>
+                </div>
+
+                <div class="version-body" id="version-{{ ver.version }}">
+                    <div class="version-meta">
+                        <div class="meta-item">
+                            <strong>作成日時:</strong> {{ ver.created_at }}
+                        </div>
+                        <div class="meta-item">
+                            <strong>適用された修正:</strong> {{ ver.modifications|length }}件
+                        </div>
+                        <div class="meta-item">
+                            <a href="/regulation/{{ regulation.id }}/view/version/{{ ver.version }}" class="view-version-btn">この版を表示</a>
+                        </div>
+                    </div>
+
+                    <div class="changes-section">
+                        <h4>🔄 このバージョンでの変更内容</h4>
+                        {% if ver.modifications %}
+                            {% for mod in ver.modifications %}
+                            <div class="change-item">
+                                <div class="change-header">
+                                    <span class="change-article">{{ mod.article_number }}</span>
+                                    <span class="change-type">{{ mod.modification_type }}</span>
+                                </div>
+
+                                <div class="change-comparison">
+                                    <div class="change-panel">
+                                        <div class="change-panel-title before">修正前</div>
+                                        <div>{{ mod.before_text }}</div>
+                                    </div>
+                                    <div class="change-panel">
+                                        <div class="change-panel-title after">修正後</div>
+                                        <div>{{ mod.after_text }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="change-reason">
+                                    <div class="change-reason-title">💡 修正理由</div>
+                                    <div class="change-reason-text">{{ mod.reason }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-changes">
+                                {% if ver.version == 1 %}
+                                初版作成（PDFアップロード）
+                                {% else %}
+                                このバージョンでは修正が記録されていません
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h2>バージョン履歴がありません</h2>
+        <p style="color: #7f8c8d; margin-top: 10px;">この規程にはまだバージョン履歴がありません。</p>
+    </div>
+    {% endif %}
+
+    <script>
+        // 最新版をデフォルトで展開
+        {% if version_details %}
+        toggleVersion({{ version_details[0].version }});
+        {% endif %}
+
+        function toggleVersion(versionNum) {
+            const body = document.getElementById(`version-${versionNum}`);
+            const icon = document.getElementById(`icon-${versionNum}`);
+
+            if (body.classList.contains('expanded')) {
+                body.classList.remove('expanded');
+                icon.classList.remove('expanded');
+            } else {
+                body.classList.add('expanded');
+                icon.classList.add('expanded');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+========================================
+AI Validation Setup Guide
+========================================
+
+OPTION 1: Fix Anthropic Library (Recommended)
+----------------------------------------------
+1. Stop the running application (Ctrl+C)
+2. Double-click: fix_anthropic.bat
+3. Wait for completion
+4. Copy app_full.py to app.py:
+   copy app_full.py app.py
+5. Run: python app.py
+
+OPTION 2: Manual Fix
+---------------------
+1. Stop the running application (Ctrl+C)
+2. Run these commands:
+   pip uninstall anthropic -y
+   pip install anthropic==0.25.0
+3. Copy app_full.py to app.py:
+   copy app_full.py app.py
+4. Run: python app.py
+
+OPTION 3: Keep Current (No AI)
+-------------------------------
+- Continue using current app.py
+- PDF upload and parsing works
+- Database storage works
+- AI validation is disabled
+
+========================================
+
+To check if AI is working:
+- Open: http://localhost:5000/test
+- Should show "✓ AI Validation: OK"
+
+========================================

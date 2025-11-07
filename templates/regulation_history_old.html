@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>修正履歴 - {{ regulation.name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Meiryo, sans-serif; background: #f5f5f5; padding: 20px; }
+        .header { background: white; padding: 30px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header h1 { color: #2c3e50; margin-bottom: 10px; }
+        .back-link { display: inline-block; color: #3498db; text-decoration: none; margin-bottom: 15px; }
+        .back-link:hover { text-decoration: underline; }
+
+        .summary { background: #e8f4f8; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3498db; }
+        .summary h2 { color: #2c3e50; margin-bottom: 10px; font-size: 18px; }
+        .summary-stats { display: flex; gap: 30px; margin-top: 15px; }
+        .stat-item { display: flex; align-items: center; gap: 10px; }
+        .stat-number { font-size: 24px; font-weight: bold; color: #2c3e50; }
+        .stat-label { color: #7f8c8d; font-size: 14px; }
+
+        .filter-tabs { background: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; gap: 10px; }
+        .filter-tab { padding: 8px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; background: #ecf0f1; color: #7f8c8d; transition: all 0.2s; }
+        .filter-tab.active { background: #3498db; color: white; }
+        .filter-tab:hover { background: #bdc3c7; color: #2c3e50; }
+        .filter-tab.active:hover { background: #2980b9; color: white; }
+
+        .modification-item { background: white; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
+        .modification-header { padding: 20px; border-bottom: 1px solid #ecf0f1; display: flex; justify-content: space-between; align-items: center; }
+        .modification-header h3 { color: #2c3e50; font-size: 18px; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 10px; }
+        .status-badge.applied { background: #d4edda; color: #155724; }
+        .status-badge.rejected { background: #f8d7da; color: #721c24; }
+        .status-badge.pending { background: #fff3cd; color: #856404; }
+
+        .mod-type { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; background: #e3f2fd; color: #1976d2; margin-left: 10px; }
+
+        .modification-body { padding: 20px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        .comparison-panel { border: 1px solid #dee2e6; border-radius: 6px; overflow: hidden; }
+        .panel-header { padding: 10px 15px; font-weight: bold; font-size: 14px; }
+        .panel-header.before { background: #fff3cd; color: #856404; }
+        .panel-header.after { background: #d4edda; color: #155724; }
+        .panel-content { padding: 15px; min-height: 80px; background: white; line-height: 1.8; }
+
+        .reason-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 3px solid #6c757d; margin-bottom: 10px; }
+        .reason-box strong { display: block; color: #495057; margin-bottom: 8px; font-size: 14px; }
+        .reason-box p { color: #6c757d; font-size: 14px; line-height: 1.6; }
+
+        .modification-meta { color: #7f8c8d; font-size: 13px; padding-top: 10px; border-top: 1px solid #ecf0f1; }
+
+        .no-modifications { text-align: center; padding: 60px 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .no-modifications-icon { font-size: 48px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <a href="/regulation/{{ regulation.id }}/view" class="back-link">← 規程内容に戻る</a>
+
+    <div class="header">
+        <h1>📜 修正履歴</h1>
+        <div style="color: #7f8c8d; font-size: 16px;">{{ company.name }} - {{ regulation.name }}</div>
+    </div>
+
+    {% set applied_count = modifications|selectattr('status', 'equalto', 'applied')|list|length %}
+    {% set rejected_count = modifications|selectattr('status', 'equalto', 'rejected')|list|length %}
+    {% set pending_count = modifications|selectattr('status', 'equalto', 'pending')|list|length %}
+
+    <div class="summary">
+        <h2>修正履歴サマリー</h2>
+        <div class="summary-stats">
+            <div class="stat-item">
+                <div class="stat-number">{{ applied_count }}</div>
+                <div class="stat-label">適用済み</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ rejected_count }}</div>
+                <div class="stat-label">却下</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ pending_count }}</div>
+                <div class="stat-label">保留中</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterModifications('all')">すべて</button>
+        <button class="filter-tab" onclick="filterModifications('applied')">適用済み</button>
+        <button class="filter-tab" onclick="filterModifications('rejected')">却下</button>
+        <button class="filter-tab" onclick="filterModifications('pending')">保留中</button>
+    </div>
+
+    {% if modifications %}
+        {% for mod in modifications %}
+        <div class="modification-item" data-status="{{ mod.status }}">
+            <div class="modification-header">
+                <div>
+                    <h3>
+                        {{ mod.article_number }}
+                        <span class="mod-type">{{ mod.modification_type }}</span>
+                        <span class="status-badge {{ mod.status }}">
+                            {% if mod.status == 'applied' %}✓ 適用済み
+                            {% elif mod.status == 'rejected' %}× 却下
+                            {% else %}⏳ 保留中{% endif %}
+                        </span>
+                    </h3>
+                </div>
+            </div>
+
+            <div class="modification-body">
+                <div class="comparison">
+                    <div class="comparison-panel">
+                        <div class="panel-header before">📄 修正前</div>
+                        <div class="panel-content">{{ mod.before_text }}</div>
+                    </div>
+                    <div class="comparison-panel">
+                        <div class="panel-header after">✨ 修正後</div>
+                        <div class="panel-content">{{ mod.after_text }}</div>
+                    </div>
+                </div>
+
+                <div class="reason-box">
+                    <strong>💡 修正理由</strong>
+                    <p>{{ mod.reason }}</p>
+                </div>
+
+                <div class="modification-meta">
+                    作成日: {{ mod.created_at }}
+                    {% if mod.applied_at %}
+                    | 適用日: {{ mod.applied_at }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="no-modifications">
+        <div class="no-modifications-icon">📋</div>
+        <h2>修正履歴がありません</h2>
+        <p style="color: #7f8c8d; margin-top: 10px;">この規程にはまだ修正履歴がありません。</p>
+    </div>
+    {% endif %}
+
+    <script>
+        function filterModifications(status) {
+            const items = document.querySelectorAll('.modification-item');
+            const tabs = document.querySelectorAll('.filter-tab');
+
+            // タブの状態を更新
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // フィルタリング
+            items.forEach(item => {
+                if (status === 'all' || item.dataset.status === status) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
