@@ -76,8 +76,9 @@ def upload():
 
         # 既存会社または新規会社
         if company_id:
-            # 既存会社を選択
-            company_id = int(company_id)
+            # 既存会社を選択（Firestoreは文字列ID、SQLiteは整数ID）
+            if not USE_FIRESTORE:
+                company_id = int(company_id)
         elif company_name:
             # 新規会社を作成
             company_id = db.create_company(company_name, company_address)
