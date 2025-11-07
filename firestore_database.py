@@ -108,9 +108,9 @@ class FirestoreDatabase:
         doc_ref = self.db.collection('regulation_content').document()
         data = {
             'regulation_id': str(regulation_id),
-            'content_json': content_dict,  # Firestoreは直接dictを保存可能
+            'content_json': json.dumps(content_dict, ensure_ascii=False),  # JSON文字列に変換
             'raw_text': raw_text,
-            'tables': tables,  # Firestoreは直接listを保存可能
+            'tables': json.dumps(tables, ensure_ascii=False) if tables else None,  # JSON文字列に変換
             'version': version,
             'created_at': datetime.utcnow()
         }
@@ -130,9 +130,12 @@ class FirestoreDatabase:
         if docs:
             data = docs[0].to_dict()
             data['id'] = docs[0].id
-            # content_jsonはFirestoreから直接dictとして取得
-            # tablesもFirestoreから直接listとして取得（存在しない場合は空リスト）
-            if 'tables' not in data or data['tables'] is None:
+            # JSON文字列をパース
+            if 'content_json' in data and data['content_json']:
+                data['content_json'] = json.loads(data['content_json'])
+            if 'tables' in data and data['tables']:
+                data['tables'] = json.loads(data['tables'])
+            else:
                 data['tables'] = []
             return data
         return None
