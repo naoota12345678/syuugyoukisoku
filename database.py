@@ -119,6 +119,26 @@ class Database:
         conn.close()
         return [dict(company) for company in companies]
 
+    def get_companies_with_regulation_count(self):
+        """会社一覧と規程数を取得"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT
+                c.id,
+                c.name,
+                c.address,
+                c.created_at,
+                COUNT(r.id) as regulation_count
+            FROM companies c
+            LEFT JOIN regulations r ON c.id = r.company_id
+            GROUP BY c.id, c.name, c.address, c.created_at
+            ORDER BY c.name
+        ''')
+        companies = cursor.fetchall()
+        conn.close()
+        return [dict(company) for company in companies]
+
     # ===== 規程関連 =====
     def create_regulation(self, company_id, reg_type, name, source_type, original_filename=None):
         """規程を登録"""
