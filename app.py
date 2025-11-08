@@ -177,7 +177,7 @@ def upload():
     companies = db.get_all_companies()
     return render_template('upload.html', companies=companies)
 
-@app.route('/regulation/<int:regulation_id>/confirm')
+@app.route('/regulation/<regulation_id>/confirm')
 def regulation_confirm(regulation_id):
     """規程確認ページ（アップロード後）"""
     regulation = db.get_regulation(regulation_id)
@@ -200,7 +200,7 @@ def regulation_confirm(regulation_id):
                          text_length=len(raw_text),
                          tables=tables)
 
-@app.route('/regulation/<int:regulation_id>/save_draft', methods=['POST'])
+@app.route('/regulation/<regulation_id>/save_draft', methods=['POST'])
 def save_draft(regulation_id):
     """たたき台として保存（Version 1確定）"""
     regulation = db.get_regulation(regulation_id)
@@ -212,7 +212,7 @@ def save_draft(regulation_id):
 
     return redirect(f'/regulation/{regulation_id}/view')
 
-@app.route('/regulation/<int:regulation_id>/validate', methods=['POST'])
+@app.route('/regulation/<regulation_id>/validate', methods=['POST'])
 def validate_regulation(regulation_id):
     """AI検証を実行"""
     regulation = db.get_regulation(regulation_id)
@@ -259,7 +259,7 @@ def validate_regulation(regulation_id):
     # AI検証なしまたは失敗の場合は規程表示ページへ
     return redirect(f'/regulation/{regulation_id}/view')
 
-@app.route('/regulations/<int:company_id>')
+@app.route('/regulations/<company_id>')
 def regulations_list(company_id):
     company = db.get_company(company_id)
     regulations = db.get_company_regulations(company_id)
@@ -280,7 +280,7 @@ def regulations_list(company_id):
 
     return render_template('regulations_list.html', company=company, regulations=regulations_with_version)
 
-@app.route('/regulation/<int:regulation_id>/view')
+@app.route('/regulation/<regulation_id>/view')
 def regulation_view(regulation_id):
     regulation = db.get_regulation(regulation_id)
     if not regulation:
@@ -322,7 +322,7 @@ def regulation_view(regulation_id):
                          current_version=current_version,
                          versions=versions)
 
-@app.route('/regulation/<int:regulation_id>/view/version/<int:version>')
+@app.route('/regulation/<regulation_id>/view/version/<int:version>')
 def regulation_view_version(regulation_id, version):
     """特定バージョンの規程を表示"""
     regulation = db.get_regulation(regulation_id)
@@ -364,7 +364,7 @@ def regulation_view_version(regulation_id, version):
                          current_version=current_version,
                          versions=versions)
 
-@app.route('/modifications/<int:regulation_id>')
+@app.route('/modifications/<regulation_id>')
 def modifications_list(regulation_id):
     regulation = db.get_regulation(regulation_id)
     company = db.get_company(regulation['company_id'])
@@ -380,7 +380,7 @@ def modifications_list(regulation_id):
                          modifications=modifications,
                          raw_text=raw_text)
 
-@app.route('/regulation/<int:regulation_id>/history')
+@app.route('/regulation/<regulation_id>/history')
 def regulation_history(regulation_id):
     regulation = db.get_regulation(regulation_id)
     if not regulation:
@@ -576,7 +576,7 @@ def chat():
             "error": "AI機能が利用できません"
         }), 500
 
-@app.route('/api/update_dates/<int:regulation_id>', methods=['POST'])
+@app.route('/api/update_dates/<regulation_id>', methods=['POST'])
 def update_dates(regulation_id):
     """提出日・施行日を更新"""
     regulation = db.get_regulation(regulation_id)
@@ -600,7 +600,7 @@ def update_dates(regulation_id):
 
     return jsonify({"success": True})
 
-@app.route('/api/mark_as_submitted/<int:regulation_id>', methods=['POST'])
+@app.route('/api/mark_as_submitted/<regulation_id>', methods=['POST'])
 def mark_as_submitted(regulation_id):
     """規程を提出済みにする（簡易版）"""
     regulation = db.get_regulation(regulation_id)
@@ -649,7 +649,7 @@ def admin_companies():
     companies = db.get_companies_with_regulation_count()
     return render_template('admin_companies.html', companies=companies)
 
-@app.route('/api/delete_company/<int:company_id>', methods=['POST'])
+@app.route('/api/delete_company/<company_id>', methods=['POST'])
 def delete_company(company_id):
     """会社を削除"""
     # 規程が紐づいているか確認
