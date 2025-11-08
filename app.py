@@ -160,7 +160,7 @@ def upload():
             structure = []
 
             # raw_textと表データを保存（構造化は後で行う）
-            db.save_regulation_content(regulation_id, structure, version=1, raw_text=raw_text, tables=tables)
+            db.save_regulation_content(company_id, regulation_id, structure, version=1, raw_text=raw_text, tables=tables)
 
             # 確認ページへリダイレクト
             return jsonify({
@@ -180,12 +180,13 @@ def upload():
 @app.route('/regulation/<regulation_id>/confirm')
 def regulation_confirm(regulation_id):
     """規程確認ページ（アップロード後）"""
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return "規程が見つかりません", 404
 
-    company = db.get_company(regulation['company_id'])
-    content_data = db.get_regulation_content(regulation_id)
+    company_id = regulation['company_id']
+    company = db.get_company(company_id)
+    content_data = db.get_regulation_content(company_id, regulation_id)
 
     raw_text = ""
     tables = []
@@ -203,24 +204,26 @@ def regulation_confirm(regulation_id):
 @app.route('/regulation/<regulation_id>/save_draft', methods=['POST'])
 def save_draft(regulation_id):
     """たたき台として保存（Version 1確定）"""
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return "規程が見つかりません", 404
 
+    company_id = regulation['company_id']
     # ステータスをactiveに更新
-    db.update_regulation_status(regulation_id, 'active')
+    db.update_regulation_status(company_id, regulation_id, 'active')
 
     return redirect(f'/regulation/{regulation_id}/view')
 
 @app.route('/regulation/<regulation_id>/validate', methods=['POST'])
 def validate_regulation(regulation_id):
     """AI検証を実行"""
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return "規程が見つかりません", 404
 
+    company_id = regulation['company_id']
     # 規程内容を取得
-    content_data = db.get_regulation_content(regulation_id)
+    content_data = db.get_regulation_content(company_id, regulation_id)
     if not content_data:
         return "規程内容が見つかりません", 404
 
@@ -239,17 +242,22 @@ def validate_regulation(regulation_id):
             modifications = validation_result['modifications']
             print(f"Found {len(modifications)} modifications")
 
+            # 現在のバージョンを取得
+            current_version = regulation.get('current_version', 1)
+
             for mod in modifications:
                 db.create_modification(
+                    company_id=company_id,
                     regulation_id=regulation_id,
                     article_number=mod['article_number'],
                     mod_type=mod['modification_type'],
                     before_text=mod['before_text'],
                     after_text=mod['after_text'],
-                    reason=mod['reason']
+                    reason=mod['reason'],
+                    target_version=current_version
                 )
 
-            db.save_validation_result(regulation_id, "main_rules_model.txt", len(modifications))
+            db.save_validation_result(company_id, regulation_id, "main_rules_model.txt", len(modifications))
 
             # 修正提案ページへリダイレクト
             return redirect(f'/modifications/{regulation_id}')
@@ -267,10 +275,10 @@ def regulations_list(company_id):
     # 各規程の最新バージョン情報を取得
     regulations_with_version = []
     for reg in regulations:
-        versions = db.get_all_versions(reg['id'])
+        versions = db.get_all_versions(company_id, reg['id'])
         reg_dict = dict(reg)
         if versions:
-            reg_dict['latest_version'] = versions[0]['version']
+            reg_dict['latest_version'] = versions[0].get('version_number', 0)
             reg_dict['last_version_date'] = versions[0]['created_at']
         else:
             reg_dict['latest_version'] = 0
@@ -282,17 +290,18 @@ def regulations_list(company_id):
 
 @app.route('/regulation/<regulation_id>/view')
 def regulation_view(regulation_id):
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return "規程が見つかりません", 404
 
-    company = db.get_company(regulation['company_id'])
+    company_id = regulation['company_id']
+    company = db.get_company(company_id)
 
     # 最新バージョンを取得
-    content_data = db.get_regulation_content(regulation_id)
+    content_data = db.get_regulation_content(company_id, regulation_id)
 
     # すべてのバージョンを取得
-    versions = db.get_all_versions(regulation_id)
+    versions = db.get_all_versions(company_id, regulation_id)
 
     content = None
     raw_text = None
@@ -325,7 +334,7 @@ def regulation_view(regulation_id):
 @app.route('/regulation/<regulation_id>/view/version/<int:version>')
 def regulation_view_version(regulation_id, version):
     """特定バージョンの規程を表示"""
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return "規程が見つかりません", 404
 
@@ -366,7 +375,7 @@ def regulation_view_version(regulation_id, version):
 
 @app.route('/modifications/<regulation_id>')
 def modifications_list(regulation_id):
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     company = db.get_company(regulation['company_id'])
     modifications = db.get_pending_modifications(regulation_id)
 
@@ -382,7 +391,7 @@ def modifications_list(regulation_id):
 
 @app.route('/regulation/<regulation_id>/history')
 def regulation_history(regulation_id):
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return "規程が見つかりません", 404
 
@@ -426,7 +435,7 @@ def apply_modifications():
     regulation_id = data.get('regulation_id')
 
     # 規程情報を取得
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return jsonify({"success": False, "error": "規程が見つかりません"}), 404
 
@@ -522,7 +531,7 @@ def chat():
         return jsonify({"success": False, "error": "regulation_idとmessageは必須です"}), 400
 
     # 規程情報を取得
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return jsonify({"success": False, "error": "規程が見つかりません"}), 404
 
@@ -579,7 +588,7 @@ def chat():
 @app.route('/api/update_dates/<regulation_id>', methods=['POST'])
 def update_dates(regulation_id):
     """提出日・施行日を更新"""
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return jsonify({"success": False, "error": "規程が見つかりません"}), 404
 
@@ -603,7 +612,7 @@ def update_dates(regulation_id):
 @app.route('/api/mark_as_submitted/<regulation_id>', methods=['POST'])
 def mark_as_submitted(regulation_id):
     """規程を提出済みにする（簡易版）"""
-    regulation = db.get_regulation(regulation_id)
+    regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return jsonify({"success": False, "error": "規程が見つかりません"}), 404
 
