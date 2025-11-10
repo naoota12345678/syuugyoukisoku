@@ -402,7 +402,7 @@ def regulation_history(regulation_id):
     versions = db.get_all_versions(regulation['company_id'], regulation_id)
 
     # 全修正履歴を取得
-    all_modifications = db.get_modification_history(regulation_id)
+    all_modifications = db.get_modification_history(regulation['company_id'], regulation_id)
 
     # 各バージョンに適用された修正を取得（簡略版）
     version_details = []
