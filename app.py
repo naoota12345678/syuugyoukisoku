@@ -344,7 +344,7 @@ def regulation_view_version(regulation_id, version):
     content_data = db.get_regulation_content(regulation_id, version=version)
 
     # すべてのバージョンを取得
-    versions = db.get_all_versions(regulation_id)
+    versions = db.get_all_versions(regulation['company_id'], regulation_id)
 
     content = None
     raw_text = None
@@ -398,7 +398,7 @@ def regulation_history(regulation_id):
     company = db.get_company(regulation['company_id'])
 
     # バージョン履歴を取得（詳細情報含む）
-    versions = db.get_all_versions(regulation_id)
+    versions = db.get_all_versions(regulation['company_id'], regulation_id)
 
     # 全修正履歴を取得
     all_modifications = db.get_modification_history(regulation_id)
