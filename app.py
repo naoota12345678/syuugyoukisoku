@@ -3,6 +3,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 
+# Version: 2025-11-10-v2 (バージョン履歴エラー修正版)
 from flask import Flask, render_template, request, jsonify, redirect
 from werkzeug.utils import secure_filename
 from pdf_parser import PDFParser
