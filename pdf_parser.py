@@ -7,6 +7,7 @@ import csv
 import json
 from typing import Dict, List, Optional
 from pdf2image import convert_from_path
+from structure_analyzer import StructureAnalyzer
 
 # Google Cloud Vision APIのインポート（オプション）
 try:
@@ -32,6 +33,9 @@ class PDFParser:
         self.page_marker_pattern = re.compile(r'^###\s*ページ\s+\d+\s*###')
         self.use_ocr = use_ocr and VISION_API_AVAILABLE
         self.debug = debug  # デバッグモードフラグ
+
+        # 構造解析器を初期化
+        self.structure_analyzer = StructureAnalyzer()
 
         # Google Cloud認証設定
         if self.use_ocr:
@@ -226,11 +230,19 @@ class PDFParser:
             # メタ情報抽出
             company_info = self._extract_company_info(full_text)
 
-            # テキストと表情報を返す
+            # 構造解析を実行（元のテキストは変更しない）
+            print("構造解析を実行中...")
+            structure_result = self.structure_analyzer.analyze(full_text)
+            print(f"  章: {structure_result['metadata']['total_chapters']}個")
+            print(f"  条: {structure_result['metadata']['total_articles']}個")
+            print(f"  項: {structure_result['metadata']['total_items']}個")
+
+            # テキスト、表、構造情報を返す
             return {
                 "success": True,
                 "company_info": company_info,
-                "raw_text": full_text,
+                "raw_text": full_text,  # 完全テキスト（変更なし）
+                "structure": structure_result["structure"],  # 構造情報（追加のみ）
                 "tables": detected_tables
             }
 
