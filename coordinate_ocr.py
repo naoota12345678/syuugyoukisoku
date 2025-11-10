@@ -142,7 +142,7 @@ class CoordinateOCR:
 
     def is_noise(self, block: Dict) -> bool:
         """
-        ノイズかどうかを判定
+        ノイズかどうかを判定（使用していない - 参考用）
 
         ノイズの条件:
         1. 孤立した1-2桁の数字（ページ番号など）
@@ -172,30 +172,89 @@ class CoordinateOCR:
 
         return False
 
+    def is_likely_page_number(self, block: Dict, all_blocks: List[Dict], page_height: int = 3000) -> bool:
+        """
+        ページ番号の可能性が高いかを判定
+
+        判定基準:
+        1. 1-3桁の数字のみ
+        2. ページの上端(y < 150)または下端(y > page_height - 150)
+        3. 周囲50px以内に他のテキストがない（孤立している）
+
+        Args:
+            block: 判定対象のブロック
+            all_blocks: 同じページの全ブロック
+            page_height: ページの高さ（デフォルト3000はA4サイズ想定）
+
+        Returns:
+            True: ページ番号の可能性が高い
+            False: ページ番号ではない可能性が高い（項番号など）
+        """
+        text = block['text'].strip()
+
+        # 1-3桁の数字のみ
+        if not re.match(r'^\d{1,3}$', text):
+            return False
+
+        # ページの上端または下端にあるか
+        y_center = block['y_center']
+        is_at_edge = (y_center < 150) or (y_center > page_height - 150)
+
+        if not is_at_edge:
+            # ページ中央にある数字は項番号の可能性が高い
+            return False
+
+        # 同じページの他のブロックを取得
+        same_page_blocks = [b for b in all_blocks if b['page'] == block['page'] and b != block]
+
+        # 周囲50px以内に他のテキストがあるか確認
+        nearby_blocks = [
+            b for b in same_page_blocks
+            if abs(b['x_center'] - block['x_center']) < 100 and
+               abs(b['y_center'] - block['y_center']) < 50
+        ]
+
+        # 周囲にテキストがある = 項番号の可能性が高い
+        if nearby_blocks:
+            return False
+
+        # すべての条件を満たす = ページ番号の可能性が高い
+        return True
+
     def remove_noise_blocks(self, blocks: List[Dict], aggressive=False) -> List[Dict]:
         """
-        ノイズブロックを除去
+        ノイズブロックを除去（ページ番号を賢く除去）
 
-        【重要】現在はノイズ除去を無効化
-        理由：
-        - 「23」が今回のノイズでも、他のPDFでは違う数字かもしれない
-        - 項番号を誤って削除するリスクがある
-        - すべてのテキストを保持し、構造解析で判定する方が安全
+        戦略:
+        - ページの端にある孤立した数字のみを「ページ番号」として除去
+        - ページ中央にある数字は項番号の可能性があるため残す
+        - 周囲にテキストがある数字も残す
 
         Args:
             blocks: ブロックのリスト
-            aggressive: Trueの場合、より積極的にノイズを除去
-        """
-        # ノイズ除去を無効化：すべてのブロックをそのまま返す
-        return blocks
+            aggressive: Trueの場合、より積極的にノイズを除去（現在未使用）
 
-        # 以下は参考用（使用しない）
-        # if not aggressive:
-        #     # 保守的：明らかなノイズのみ除去
-        #     return [b for b in blocks if not self.is_noise(b)]
-        # else:
-        #     # 積極的：疑わしいものも除去（現時点では使わない）
-        #     return blocks
+        Returns:
+            ノイズ除去後のブロックリスト
+        """
+        if not blocks:
+            return blocks
+
+        # ページ番号を除去
+        filtered_blocks = []
+        for block in blocks:
+            # ページ番号かどうかを判定
+            if self.is_likely_page_number(block, blocks):
+                # ページ番号と判定された場合はスキップ
+                continue
+
+            # 空のブロックも除去
+            if not block['text'].strip():
+                continue
+
+            filtered_blocks.append(block)
+
+        return filtered_blocks
 
     def merge_blocks_to_text(self, blocks: List[Dict]) -> str:
         """
