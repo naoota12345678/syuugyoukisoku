@@ -8,6 +8,7 @@ import json
 from typing import Dict, List, Optional
 from pdf2image import convert_from_path
 from structure_analyzer import StructureAnalyzer
+from coordinate_ocr import CoordinateOCR
 
 # Google Cloud Vision APIのインポート（オプション）
 try:
@@ -36,6 +37,9 @@ class PDFParser:
 
         # 構造解析器を初期化
         self.structure_analyzer = StructureAnalyzer()
+
+        # 座標ベースOCRを初期化
+        self.coordinate_ocr = CoordinateOCR()
 
         # Google Cloud認証設定
         if self.use_ocr:
@@ -307,11 +311,12 @@ class PDFParser:
                         print(f"Error: {response.error.message}")
                         continue
 
-                    # 完全テキスト抽出（絶対に漏れや抜けがない方式）
-                    page_text = ""
-                    if response.text_annotations:
-                        # メインテキストを使用（最も完全なテキスト）
-                        page_text = response.text_annotations[0].description
+                    # 座標ベースの完全テキスト抽出（正確な読み取り順序）
+                    ocr_result = self.coordinate_ocr.process_response(response, debug=self.debug)
+                    page_text = ocr_result['raw_text']
+
+                    if self.debug:
+                        print(f"    OCR統計: {ocr_result['stats']}")
 
                     # 表構造を検出（別途）
                     page_tables = []
