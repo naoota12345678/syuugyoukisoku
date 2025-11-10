@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # アプリケーションファイルをコピー
 COPY . .
 
+# Pythonの.pycファイル生成を無効化（キャッシュ問題を防ぐ）
+ENV PYTHONDONTWRITEBYTECODE=1
+
 # ポート設定（Cloud Runは環境変数PORTを使用）
 ENV PORT=8080
 
