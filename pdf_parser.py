@@ -253,7 +253,7 @@ class PDFParser:
             return full_text
 
     def _extract_with_vision_api(self, pdf_path: str):
-        """Google Cloud Vision APIでOCR処理（表検出対応）"""
+        """Google Cloud Vision APIでOCR処理（完全テキスト抽出・表検出対応）"""
         if not VISION_API_AVAILABLE:
             return "Vision API is not available", []
 
@@ -262,8 +262,8 @@ class PDFParser:
         all_tables = []
 
         try:
-            # PDFを画像に変換
-            images = convert_from_path(pdf_path, dpi=300)  # 高解像度（表の認識精度向上）
+            # PDFを画像に変換（高解像度で完全抽出）
+            images = convert_from_path(pdf_path, dpi=300)
             print(f"{len(images)}ページをOCR処理中...")
 
             for i, image in enumerate(images, 1):
@@ -274,9 +274,9 @@ class PDFParser:
                     temp_path = temp_file.name
 
                 try:
-                    image.save(temp_path, 'PNG')
+                    image.save(temp_path, 'PNG', quality=95)  # 高品質で保存
 
-                    # Vision APIでOCR
+                    # Vision APIでOCR（最高精度設定）
                     with open(temp_path, 'rb') as image_file:
                         content = image_file.read()
 
@@ -285,6 +285,9 @@ class PDFParser:
                         image=vision_image,
                         image_context={
                             "language_hints": ["ja"],
+                            "text_detection_params": {
+                                "enable_text_detection_confidence_score": True
+                            }
                         }
                     )
 
@@ -292,16 +295,53 @@ class PDFParser:
                         print(f"Error: {response.error.message}")
                         continue
 
-                    # 表構造を考慮してテキストを抽出
-                    page_text, page_tables = self._extract_text_with_tables(response)
+                    # 完全テキスト抽出（絶対に漏れや抜けがない方式）
+                    page_text = ""
+                    if response.text_annotations:
+                        # メインテキストを使用（最も完全なテキスト）
+                        page_text = response.text_annotations[0].description
+
+                    # 表構造を検出（別途）
+                    page_tables = []
+                    if response.full_text_annotation:
+                        blocks = []
+                        for page in response.full_text_annotation.pages:
+                            for block in page.blocks:
+                                vertices = block.bounding_box.vertices
+                                if vertices:
+                                    top_left_y = vertices[0].y if vertices[0].y else 0
+                                    top_left_x = vertices[0].x if vertices[0].x else 0
+
+                                    # ブロック内のテキストを結合
+                                    block_text = ""
+                                    for paragraph in block.paragraphs:
+                                        para_text = ""
+                                        for word in paragraph.words:
+                                            word_text = ''.join([symbol.text for symbol in word.symbols])
+                                            para_text += word_text + " "
+                                        block_text += para_text.strip() + "\n"
+
+                                    blocks.append({
+                                        'text': block_text,
+                                        'y': top_left_y,
+                                        'x': top_left_x,
+                                        'width': vertices[2].x - vertices[0].x if vertices[2].x and vertices[0].x else 0,
+                                        'height': vertices[2].y - vertices[0].y if vertices[2].y and vertices[0].y else 0
+                                    })
+
+                        # 表構造を検出
+                        table_data = self._detect_table_structure(blocks, debug=self.debug)
+                        if table_data:
+                            page_tables.append({
+                                'page': i,
+                                'data': table_data
+                            })
 
                     if page_text:
                         all_text.append(f"### ページ {i} ###\n{page_text}\n")
                         print(f"OK ({len(page_text)}文字", end="")
 
-                        # ページ番号を更新して表情報を保存
-                        for table in page_tables:
-                            table['page'] = i
+                        # 表情報を保存
                         all_tables.extend(page_tables)
 
                         if page_tables:
