@@ -342,7 +342,7 @@ def regulation_view_version(regulation_id, version):
     company = db.get_company(regulation['company_id'])
 
     # 指定されたバージョンを取得
-    content_data = db.get_regulation_content(regulation_id, version=version)
+    content_data = db.get_regulation_content(regulation['company_id'], regulation_id, version=version)
 
     # すべてのバージョンを取得
     versions = db.get_all_versions(regulation['company_id'], regulation_id)
@@ -381,7 +381,7 @@ def modifications_list(regulation_id):
     modifications = db.get_pending_modifications(regulation_id)
 
     # 元の就業規則テキストを取得
-    content_data = db.get_regulation_content(regulation_id)
+    content_data = db.get_regulation_content(regulation['company_id'], regulation_id)
     raw_text = content_data.get('raw_text', '') if content_data else ''
 
     return render_template('modifications.html',
@@ -446,7 +446,7 @@ def apply_modifications():
         return jsonify({"success": False, "error": "会社情報が見つかりません"}), 404
 
     # 現在の規程内容を取得
-    current_content = db.get_regulation_content(regulation_id)
+    current_content = db.get_regulation_content(regulation['company_id'], regulation_id)
     if not current_content:
         return jsonify({"success": False, "error": "規程内容が見つかりません"}), 404
 
@@ -542,7 +542,7 @@ def chat():
         return jsonify({"success": False, "error": "会社情報が見つかりません"}), 404
 
     # 規程内容を取得
-    current_content = db.get_regulation_content(regulation_id)
+    current_content = db.get_regulation_content(regulation['company_id'], regulation_id)
     if not current_content:
         return jsonify({"success": False, "error": "規程内容が見つかりません"}), 404
 
