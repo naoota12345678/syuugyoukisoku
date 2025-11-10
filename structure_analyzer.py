@@ -26,6 +26,30 @@ class StructureAnalyzer:
             re.compile(r'^([0-9]+)[.．、]'),  # 1. 2. 3.
         ]
 
+    def _is_noise_line(self, line: str) -> bool:
+        """
+        ノイズ行かどうかを判定（構造解析時に無視する）
+
+        ノイズの例:
+        - 孤立した1-2桁の数字（ページ番号など）
+        - 極端に短い行（1-2文字）
+        """
+        line = line.strip()
+
+        # 空行
+        if not line:
+            return True
+
+        # 孤立した1-2桁の数字のみ（ページ番号の可能性）
+        if re.match(r'^\d{1,2}$', line):
+            return True
+
+        # 極端に短い行（1-2文字）で、意味のある文字でない場合
+        if len(line) <= 2 and not re.match(r'^[第①-⑳()\d]+', line):
+            return True
+
+        return False
+
     def analyze(self, raw_text: str) -> Dict:
         """
         完全テキストから構造情報を抽出
@@ -57,8 +81,10 @@ class StructureAnalyzer:
 
         for line_num, line in enumerate(lines):
             line = line.strip()
-            if not line:
-                current_position += 1
+
+            # ノイズ行をスキップ（でもテキストは削除しない）
+            if self._is_noise_line(line):
+                current_position += len(line) + 1
                 continue
 
             line_start = current_position

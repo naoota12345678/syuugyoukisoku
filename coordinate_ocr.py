@@ -176,16 +176,26 @@ class CoordinateOCR:
         """
         ノイズブロックを除去
 
+        【重要】現在はノイズ除去を無効化
+        理由：
+        - 「23」が今回のノイズでも、他のPDFでは違う数字かもしれない
+        - 項番号を誤って削除するリスクがある
+        - すべてのテキストを保持し、構造解析で判定する方が安全
+
         Args:
             blocks: ブロックのリスト
             aggressive: Trueの場合、より積極的にノイズを除去
         """
-        if not aggressive:
-            # 保守的：明らかなノイズのみ除去
-            return [b for b in blocks if not self.is_noise(b)]
-        else:
-            # 積極的：疑わしいものも除去（現時点では使わない）
-            return blocks
+        # ノイズ除去を無効化：すべてのブロックをそのまま返す
+        return blocks
+
+        # 以下は参考用（使用しない）
+        # if not aggressive:
+        #     # 保守的：明らかなノイズのみ除去
+        #     return [b for b in blocks if not self.is_noise(b)]
+        # else:
+        #     # 積極的：疑わしいものも除去（現時点では使わない）
+        #     return blocks
 
     def merge_blocks_to_text(self, blocks: List[Dict]) -> str:
         """
