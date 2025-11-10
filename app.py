@@ -407,7 +407,7 @@ def regulation_history(regulation_id):
     # 各バージョンに適用された修正を取得（簡略版）
     version_details = []
     for ver in versions:
-        version_num = ver['version']
+        version_num = ver.get('version_number', ver.get('version', 1))  # version_numberまたはversionをフォールバック
 
         # このバージョンで適用された修正を簡易的にフィルタリング
         # （厳密な時系列は簡略化）
@@ -415,9 +415,9 @@ def regulation_history(regulation_id):
 
         version_details.append({
             'version': version_num,
-            'created_at': ver['created_at'],
+            'created_at': ver.get('created_at', ''),
             'modifications': applied_mods[:5],  # 最大5件
-            'is_latest': version_num == versions[0]['version'] if versions else False
+            'is_latest': version_num == versions[0].get('version_number', versions[0].get('version', 1)) if versions else False
         })
 
     # 従来の修正履歴も取得（参考用）
