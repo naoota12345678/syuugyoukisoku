@@ -271,12 +271,10 @@ class CoordinateOCR:
         current_page = None
 
         for block in blocks:
-            # ページが変わったらページマーカーを挿入
+            # ページが変わったら空行を挿入（ページマーカーは不要）
             if block['page'] != current_page:
                 if current_page is not None:
                     lines.append("")  # ページ間の空行
-                lines.append(f"### ページ {block['page']} ###")
-                lines.append("")
                 current_page = block['page']
 
             # ブロックのテキストを追加
