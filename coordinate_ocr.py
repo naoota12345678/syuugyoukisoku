@@ -256,6 +256,78 @@ class CoordinateOCR:
 
         return filtered_blocks
 
+    def remove_out_of_sequence_numbers(self, blocks: List[Dict]) -> List[Dict]:
+        """
+        項番号のシーケンスをチェックして、順序が飛んでいる数字を削除
+
+        例: 1, 2, 3, 23, 4 → 23を削除（3→23→4は不自然）
+
+        Args:
+            blocks: ブロックのリスト
+
+        Returns:
+            シーケンス外の数字を削除したブロックリスト
+        """
+        if not blocks:
+            return blocks
+
+        filtered_blocks = []
+
+        # ページごとに処理
+        pages = {}
+        for block in blocks:
+            page = block['page']
+            if page not in pages:
+                pages[page] = []
+            pages[page].append(block)
+
+        for page, page_blocks in pages.items():
+            # 項番号パターン（1桁または2桁の数字のみ）
+            item_numbers = []
+            item_blocks = []
+
+            for block in page_blocks:
+                text = block['text'].strip()
+                # 項番号の可能性：1-2桁の数字のみ
+                if re.match(r'^[0-9]{1,2}$', text):
+                    try:
+                        num = int(text)
+                        item_numbers.append(num)
+                        item_blocks.append(block)
+                    except ValueError:
+                        pass
+
+            # 項番号が3個以上ある場合のみシーケンスチェック
+            if len(item_numbers) >= 3:
+                # シーケンスをチェックして異常な数字を特定
+                suspicious_indices = []
+                for i in range(1, len(item_numbers) - 1):
+                    prev_num = item_numbers[i - 1]
+                    curr_num = item_numbers[i]
+                    next_num = item_numbers[i + 1]
+
+                    # 前後の数字から大きく離れている場合は異常
+                    # 例: 3 → 23 → 4 の場合、23は異常
+                    if curr_num > prev_num + 10 and curr_num > next_num + 10:
+                        suspicious_indices.append(i)
+                        if self.debug:
+                            print(f"[DEBUG] 異常な項番号を検出: {prev_num} → {curr_num} → {next_num} (ページ{page})")
+
+                # 異常な項番号を削除リストに追加
+                suspicious_blocks = set()
+                for idx in suspicious_indices:
+                    suspicious_blocks.add(id(item_blocks[idx]))
+
+                # ページのブロックをフィルタリング
+                for block in page_blocks:
+                    if id(block) not in suspicious_blocks:
+                        filtered_blocks.append(block)
+            else:
+                # 項番号が少ない場合はそのまま
+                filtered_blocks.extend(page_blocks)
+
+        return filtered_blocks
+
     def merge_blocks_to_text(self, blocks: List[Dict]) -> str:
         """
         ブロックを結合して完全なテキストにする
@@ -323,20 +395,32 @@ class CoordinateOCR:
                 for b in removed_blocks[:10]:  # 最初の10個を表示
                     print(f"    - '{b['text'][:30]}' (page={b['page']}, y={b['y_center']:.0f})")
 
+        # ステップ3.5: 項番号シーケンスチェック（異常な数字を除去）
+        sequence_checked_blocks = self.remove_out_of_sequence_numbers(cleaned_blocks)
+        seq_removed_count = len(cleaned_blocks) - len(sequence_checked_blocks)
+        if debug and seq_removed_count > 0:
+            print(f"\n{'='*80}")
+            print(f"[ステップ3.5] 項番号シーケンスチェック: {seq_removed_count}個の異常な数字を除去")
+            removed_blocks = [b for b in cleaned_blocks if b not in sequence_checked_blocks]
+            for b in removed_blocks:
+                print(f"    - '{b['text']}' (page={b['page']}, y={b['y_center']:.0f})")
+
         # ステップ4: テキストに結合
-        full_text = self.merge_blocks_to_text(cleaned_blocks)
+        full_text = self.merge_blocks_to_text(sequence_checked_blocks)
         if debug:
             print(f"\n{'='*80}")
             print(f"[ステップ4] 完全テキスト生成: {len(full_text)}文字")
 
         return {
             'raw_text': full_text,
-            'blocks': cleaned_blocks,
+            'blocks': sequence_checked_blocks,
             'stats': {
                 'total_blocks': len(all_blocks),
                 'after_sorting': len(sorted_blocks),
                 'after_cleaning': len(cleaned_blocks),
+                'after_sequence_check': len(sequence_checked_blocks),
                 'removed_noise': removed_count,
+                'removed_out_of_sequence': seq_removed_count,
                 'total_chars': len(full_text)
             }
         }
