@@ -226,14 +226,29 @@ class CoordinateOCR:
         if is_at_edge and not nearby_blocks:
             return True
 
-        # 周囲に丸数字（項番号）がある場合
+        # 周囲に項番号パターンがある場合
         # → その間に挟まった数字はページ番号の可能性が高い
+
+        # 丸数字パターン（①②③）
         has_circle_numbers_nearby = any(
             re.search(r'[①-⑳]', nearby_text) for nearby_text in nearby_texts
         )
 
-        if has_circle_numbers_nearby:
-            # 丸数字のシーケンス中にある数字はページ番号の可能性が高い
+        # 括弧なし数字パターン（1. 2. 3.）
+        has_plain_item_numbers_nearby = any(
+            re.match(r'^[0-9]{1,2}[.．、]', nearby_text) for nearby_text in nearby_texts
+        )
+
+        # 括弧付き数字パターン（(1) (2) (3)）
+        has_paren_item_numbers_nearby = any(
+            re.match(r'^\([0-9]{1,2}\)', nearby_text) for nearby_text in nearby_texts
+        )
+
+        # いずれかの項番号パターンがあれば、間の孤立数字はページ番号
+        if has_circle_numbers_nearby or has_plain_item_numbers_nearby or has_paren_item_numbers_nearby:
+            # 項番号のシーケンス中にある数字はページ番号の可能性が高い
+            if self.debug:
+                print(f"[DEBUG] ページ番号判定: '{text}' は項番号の間にある孤立数字（周囲: {nearby_texts[:3]}）")
             return True
 
         # 周囲に長文（50文字以上）がない場合はページ番号
@@ -393,24 +408,49 @@ class CoordinateOCR:
         ブロックを結合して完全なテキストにする
 
         ルール:
-        - ページごとに「### ページ X ###」を挿入
-        - ブロック間は改行で区切る
+        - ページごとに空行を挿入
+        - 項番号パターン（1. 2. 3.など）の直後にテキストがある場合は同じ行に結合
+        - その他のブロックは改行で区切る
         """
         if not blocks:
             return ""
 
         lines = []
         current_page = None
+        i = 0
 
-        for block in blocks:
-            # ページが変わったら空行を挿入（ページマーカーは不要）
+        while i < len(blocks):
+            block = blocks[i]
+
+            # ページが変わったら空行を挿入
             if block['page'] != current_page:
                 if current_page is not None:
                     lines.append("")  # ページ間の空行
                 current_page = block['page']
 
-            # ブロックのテキストを追加
-            lines.append(block['text'])
+            text = block['text'].strip()
+
+            # 項番号パターンかどうかをチェック
+            is_item_number = re.match(r'^([0-9]{1,2}[.．、]|[①-⑳]|\([0-9]{1,2}\))$', text)
+
+            if is_item_number and i + 1 < len(blocks):
+                next_block = blocks[i + 1]
+
+                # 次のブロックが同じページで、Y座標が近い（50px以内）場合は結合
+                if (next_block['page'] == block['page'] and
+                    abs(next_block['y_center'] - block['y_center']) < 50):
+
+                    # 項番号とテキストを結合（スペースで区切る）
+                    combined_text = text + " " + next_block['text'].strip()
+                    lines.append(combined_text)
+
+                    # 次のブロックはスキップ
+                    i += 2
+                    continue
+
+            # 通常のブロック
+            lines.append(text)
+            i += 1
 
         return '\n'.join(lines)
 
