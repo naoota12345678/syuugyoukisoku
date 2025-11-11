@@ -178,10 +178,11 @@ class CoordinateOCR:
         """
         ページ番号の可能性が高いかを判定
 
-        判定基準:
+        判定基準（改善版）:
         1. 1-3桁の数字のみ
-        2. ページの上端(y < 150)または下端(y > page_height - 150)
-        3. 周囲50px以内に他のテキストがない（孤立している）
+        2. 10以上の数字は基本的にページ番号として扱う（項番号は通常1-9）
+        3. ページの上端・下端・中央いずれでもページ番号の可能性がある
+        4. 周囲に他のテキストがない（孤立している）
 
         Args:
             block: 判定対象のブロック
@@ -198,30 +199,50 @@ class CoordinateOCR:
         if not re.match(r'^\d{1,3}$', text):
             return False
 
-        # ページの上端または下端にあるか
+        num = int(text)
+
+        # 10以上の数字は基本的にページ番号
+        # （項番号は通常①-⑨、または(1)-(9)の範囲）
+        if num >= 10:
+            # ただし、周囲にテキストがある場合は項番号の可能性
+            same_page_blocks = [b for b in all_blocks if b['page'] == block['page'] and b != block]
+
+            # 周囲50px以内に他のテキストがあるか確認
+            nearby_blocks = [
+                b for b in same_page_blocks
+                if abs(b['x_center'] - block['x_center']) < 100 and
+                   abs(b['y_center'] - block['y_center']) < 50
+            ]
+
+            # 周囲にテキストがない = ページ番号の可能性が高い
+            if not nearby_blocks:
+                return True
+
+            # 周囲にテキストがあっても、それが項目内容でない場合はページ番号
+            # （項目内容は通常50文字以上）
+            has_long_text_nearby = any(len(b['text'].strip()) > 50 for b in nearby_blocks)
+            if not has_long_text_nearby:
+                return True
+
+        # 1-9の数字の場合
+        # ページの上端または下端で、孤立している場合のみページ番号
         y_center = block['y_center']
         is_at_edge = (y_center < 150) or (y_center > page_height - 150)
 
-        if not is_at_edge:
-            # ページ中央にある数字は項番号の可能性が高い
-            return False
+        if is_at_edge:
+            same_page_blocks = [b for b in all_blocks if b['page'] == block['page'] and b != block]
+            nearby_blocks = [
+                b for b in same_page_blocks
+                if abs(b['x_center'] - block['x_center']) < 100 and
+                   abs(b['y_center'] - block['y_center']) < 50
+            ]
 
-        # 同じページの他のブロックを取得
-        same_page_blocks = [b for b in all_blocks if b['page'] == block['page'] and b != block]
+            # 周囲にテキストがない = ページ番号の可能性が高い
+            if not nearby_blocks:
+                return True
 
-        # 周囲50px以内に他のテキストがあるか確認
-        nearby_blocks = [
-            b for b in same_page_blocks
-            if abs(b['x_center'] - block['x_center']) < 100 and
-               abs(b['y_center'] - block['y_center']) < 50
-        ]
-
-        # 周囲にテキストがある = 項番号の可能性が高い
-        if nearby_blocks:
-            return False
-
-        # すべての条件を満たす = ページ番号の可能性が高い
-        return True
+        # その他の場合は項番号の可能性が高い
+        return False
 
     def remove_noise_blocks(self, blocks: List[Dict], aggressive=False) -> List[Dict]:
         """
