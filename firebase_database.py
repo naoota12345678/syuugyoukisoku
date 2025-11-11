@@ -27,16 +27,33 @@ class FirebaseDatabase:
         """Firebase Admin SDKを初期化"""
         if not FirebaseDatabase._initialized:
             try:
-                # 環境変数からサービスアカウントキーのパスを取得
-                cred_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+                # 環境変数からサービスアカウントキーを取得
+                cred_data = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
-                if cred_path and os.path.exists(cred_path):
-                    # サービスアカウントキーを使用
-                    cred = credentials.Certificate(cred_path)
-                    firebase_admin.initialize_app(cred, {
-                        'projectId': project_id or 'syuugyoukisoku'
-                    })
-                    print(f"✅ Firebase Admin SDK initialized with service account: {cred_path}")
+                if cred_data:
+                    # JSONファイルパスかJSON文字列かを判定
+                    if cred_data.strip().startswith('{'):
+                        # JSON文字列の場合（Secret Managerから直接読み込まれた場合）
+                        import json
+                        cred_dict = json.loads(cred_data)
+                        cred = credentials.Certificate(cred_dict)
+                        firebase_admin.initialize_app(cred, {
+                            'projectId': project_id or 'syuugyoukisoku'
+                        })
+                        print(f"✅ Firebase Admin SDK initialized with service account JSON (project: {cred_dict.get('project_id')})")
+                    elif os.path.exists(cred_data):
+                        # ファイルパスの場合
+                        cred = credentials.Certificate(cred_data)
+                        firebase_admin.initialize_app(cred, {
+                            'projectId': project_id or 'syuugyoukisoku'
+                        })
+                        print(f"✅ Firebase Admin SDK initialized with service account file: {cred_data}")
+                    else:
+                        # デフォルト認証にフォールバック
+                        firebase_admin.initialize_app(options={
+                            'projectId': project_id or 'syuugyoukisoku'
+                        })
+                        print(f"✅ Firebase Admin SDK initialized with default credentials (project: {project_id or 'syuugyoukisoku'})")
                 else:
                     # デフォルト認証（Cloud Run環境など）
                     firebase_admin.initialize_app(options={
