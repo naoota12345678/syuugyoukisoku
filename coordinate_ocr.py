@@ -447,10 +447,19 @@ class CoordinateOCR:
                 if i + 1 < len(blocks):
                     next_block = blocks[i + 1]
 
-                    # 次のブロックが同じページで、Y座標が近い（50px以内）場合は結合
-                    if (next_block['page'] == block['page'] and
-                        abs(next_block['y_center'] - block['y_center']) < 50):
+                    # 次のブロックが同じページの場合
+                    # Y座標が近い（150px以内）、または次のブロックが項番号でない場合は結合
+                    next_is_item = re.match(r'^[0-9]{1,2}[.．、]$', next_block['text'].strip())
+                    y_distance = abs(next_block['y_center'] - block['y_center'])
 
+                    # 条件1: Y座標が近い（150px以内）
+                    # 条件2: 次が項番号でなく、Y座標が500px以内（同じ条の範囲）
+                    should_merge = (
+                        (next_block['page'] == block['page']) and
+                        (y_distance < 150 or (not next_is_item and y_distance < 500))
+                    )
+
+                    if should_merge:
                         # 項番号とテキストを結合
                         combined_text = text + " " + next_block['text'].strip()
                         lines.append(combined_text)
@@ -473,9 +482,17 @@ class CoordinateOCR:
                 if i + 1 < len(blocks):
                     next_block = blocks[i + 1]
 
-                    if (next_block['page'] == block['page'] and
-                        abs(next_block['y_center'] - block['y_center']) < 50):
+                    # 次のブロックが項番号でない場合は積極的に結合
+                    next_is_circle = re.match(r'^[①-⑳]$', next_block['text'].strip())
+                    next_is_paren = re.match(r'^\([0-9]{1,2}\)$', next_block['text'].strip())
+                    y_distance = abs(next_block['y_center'] - block['y_center'])
 
+                    should_merge = (
+                        (next_block['page'] == block['page']) and
+                        (y_distance < 150 or (not next_is_circle and not next_is_paren and y_distance < 500))
+                    )
+
+                    if should_merge:
                         combined_text = text + " " + next_block['text'].strip()
                         lines.append(combined_text)
                         i += 2
