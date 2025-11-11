@@ -41,15 +41,27 @@ class PDFParser:
         # 座標ベースOCRを初期化
         self.coordinate_ocr = CoordinateOCR()
 
-        # Google Cloud認証設定
+        # Google Cloud Vision API認証設定
+        # GOOGLE_APPLICATION_CREDENTIALSがJSON文字列の場合、
+        # Vision APIはデフォルト認証を使用するため、特別な処理は不要
         if self.use_ocr:
-            cred_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-            if cred_path and not os.path.isabs(cred_path):
-                # 相対パスの場合、絶対パスに変換
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                abs_path = os.path.join(base_dir, cred_path)
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = abs_path
-                print(f"Vision API credentials set: {abs_path}")
+            cred_data = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+            if cred_data:
+                # JSON文字列かファイルパスかを判定
+                if cred_data.strip().startswith('{'):
+                    # JSON文字列の場合: 一時ファイルとして保存
+                    import tempfile
+                    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                        f.write(cred_data)
+                        temp_cred_path = f.name
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_cred_path
+                    print(f"Vision API credentials set from JSON string (temp file: {temp_cred_path})")
+                elif not os.path.isabs(cred_data):
+                    # 相対パスの場合、絶対パスに変換
+                    base_dir = os.path.dirname(os.path.abspath(__file__))
+                    abs_path = os.path.join(base_dir, cred_data)
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = abs_path
+                    print(f"Vision API credentials set: {abs_path}")
     
     def _detect_table_structure(self, blocks: List[Dict], debug=False) -> Optional[List[List[str]]]:
         """
