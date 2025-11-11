@@ -6,7 +6,7 @@
 4. 完全テキストとして結合
 """
 
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 import re
 
 
@@ -410,14 +410,19 @@ class CoordinateOCR:
         ルール:
         - ページごとに空行を挿入
         - 項番号パターン（1. 2. 3.など）の直後にテキストがある場合は同じ行に結合
+        - 項番号のシーケンスを検出して、欠けている番号を補完
         - その他のブロックは改行で区切る
         """
         if not blocks:
             return ""
 
+        # 項番号を事前に検出してシーケンスを把握
+        item_numbers = self._detect_item_number_sequence(blocks)
+
         lines = []
         current_page = None
         i = 0
+        current_item_number = None
 
         while i < len(blocks):
             block = blocks[i]
@@ -427,25 +432,73 @@ class CoordinateOCR:
                 if current_page is not None:
                     lines.append("")  # ページ間の空行
                 current_page = block['page']
+                current_item_number = None  # ページが変わったら項番号をリセット
 
             text = block['text'].strip()
 
             # 項番号パターンかどうかをチェック
-            is_item_number = re.match(r'^([0-9]{1,2}[.．、]|[①-⑳]|\([0-9]{1,2}\))$', text)
+            item_match = re.match(r'^([0-9]{1,2})[.．、]$', text)
 
-            if is_item_number and i + 1 < len(blocks):
-                next_block = blocks[i + 1]
+            if item_match:
+                # 項番号を記録
+                current_item_number = int(item_match.group(1))
 
-                # 次のブロックが同じページで、Y座標が近い（50px以内）場合は結合
-                if (next_block['page'] == block['page'] and
-                    abs(next_block['y_center'] - block['y_center']) < 50):
+                # 次のブロックと結合
+                if i + 1 < len(blocks):
+                    next_block = blocks[i + 1]
 
-                    # 項番号とテキストを結合（スペースで区切る）
-                    combined_text = text + " " + next_block['text'].strip()
-                    lines.append(combined_text)
+                    # 次のブロックが同じページで、Y座標が近い（50px以内）場合は結合
+                    if (next_block['page'] == block['page'] and
+                        abs(next_block['y_center'] - block['y_center']) < 50):
 
-                    # 次のブロックはスキップ
-                    i += 2
+                        # 項番号とテキストを結合
+                        combined_text = text + " " + next_block['text'].strip()
+                        lines.append(combined_text)
+
+                        # 次のブロックはスキップ
+                        i += 2
+                        continue
+
+                # 次のブロックが遠い場合は項番号だけ出力
+                lines.append(text)
+                i += 1
+                continue
+
+            # 丸数字や括弧付き数字の項番号
+            is_circle_item = re.match(r'^[①-⑳]$', text)
+            is_paren_item = re.match(r'^\([0-9]{1,2}\)$', text)
+
+            if is_circle_item or is_paren_item:
+                # 次のブロックと結合
+                if i + 1 < len(blocks):
+                    next_block = blocks[i + 1]
+
+                    if (next_block['page'] == block['page'] and
+                        abs(next_block['y_center'] - block['y_center']) < 50):
+
+                        combined_text = text + " " + next_block['text'].strip()
+                        lines.append(combined_text)
+                        i += 2
+                        continue
+
+                lines.append(text)
+                i += 1
+                continue
+
+            # 項番号が欠けている可能性をチェック
+            # 前の項番号が3で、次に「4.」がない場合、このテキストが4項の可能性
+            if current_item_number and not item_match and not is_circle_item and not is_paren_item:
+                # 次の項番号を探す
+                next_item = self._find_next_item_number(blocks, i + 1, block['page'])
+
+                # 現在の項番号+1が次に来るべき番号で、でもそれがない場合
+                expected_next = current_item_number + 1
+                if next_item and next_item > expected_next:
+                    # このテキストは欠けている項番号の内容の可能性
+                    # 項番号を補完して出力
+                    lines.append(f"{expected_next}. {text}")
+                    current_item_number = expected_next
+                    i += 1
                     continue
 
             # 通常のブロック
@@ -453,6 +506,27 @@ class CoordinateOCR:
             i += 1
 
         return '\n'.join(lines)
+
+    def _detect_item_number_sequence(self, blocks: List[Dict]) -> List[int]:
+        """ブロックから項番号のシーケンスを検出"""
+        item_numbers = []
+        for block in blocks:
+            text = block['text'].strip()
+            match = re.match(r'^([0-9]{1,2})[.．、]$', text)
+            if match:
+                item_numbers.append(int(match.group(1)))
+        return sorted(set(item_numbers))
+
+    def _find_next_item_number(self, blocks: List[Dict], start_idx: int, current_page: int) -> Optional[int]:
+        """次の項番号を探す"""
+        for i in range(start_idx, min(start_idx + 10, len(blocks))):
+            if blocks[i]['page'] != current_page:
+                break
+            text = blocks[i]['text'].strip()
+            match = re.match(r'^([0-9]{1,2})[.．、]$', text)
+            if match:
+                return int(match.group(1))
+        return None
 
     def process_response(self, response, debug=False) -> Dict:
         """
