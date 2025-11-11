@@ -38,8 +38,8 @@ class PDFParser:
         # 構造解析器を初期化
         self.structure_analyzer = StructureAnalyzer()
 
-        # 座標ベースOCRを初期化
-        self.coordinate_ocr = CoordinateOCR()
+        # 座標ベースOCRを初期化（デバッグフラグを渡す）
+        self.coordinate_ocr = CoordinateOCR(debug=self.debug)
 
         # Google Cloud Vision API認証設定
         # GOOGLE_APPLICATION_CREDENTIALSがJSON文字列の場合、

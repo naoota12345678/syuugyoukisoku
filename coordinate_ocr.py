@@ -13,7 +13,9 @@ import re
 class CoordinateOCR:
     """座標情報を使った正確なテキスト抽出"""
 
-    def __init__(self):
+    def __init__(self, debug=False):
+        # デバッグモードフラグ
+        self.debug = debug
         # ノイズパターン（孤立した数字など）
         self.noise_patterns = [
             re.compile(r'^\d{1,2}$'),  # 1桁または2桁の数字のみ（ページ番号など）
@@ -261,6 +263,7 @@ class CoordinateOCR:
         項番号のシーケンスをチェックして、順序が飛んでいる数字を削除
 
         例: 1, 2, 3, 23, 4 → 23を削除（3→23→4は不自然）
+        例: ①, ②, ③, 23, ④ → 23を削除（丸数字のシーケンス中の数字）
 
         Args:
             blocks: ブロックのリスト
@@ -282,41 +285,77 @@ class CoordinateOCR:
             pages[page].append(block)
 
         for page, page_blocks in pages.items():
-            # 項番号パターン（1桁または2桁の数字のみ）
-            item_numbers = []
-            item_blocks = []
+            # すべてのブロックをスキャンして、項番号らしきものを収集
+            item_candidates = []
 
-            for block in page_blocks:
+            for i, block in enumerate(page_blocks):
                 text = block['text'].strip()
-                # 項番号の可能性：1-2桁の数字のみ
-                if re.match(r'^[0-9]{1,2}$', text):
-                    try:
-                        num = int(text)
-                        item_numbers.append(num)
-                        item_blocks.append(block)
-                    except ValueError:
-                        pass
+                item_type = None
+                item_value = None
+
+                # 丸数字パターン
+                if re.match(r'^[①-⑳]+$', text):
+                    circle_map = {'①':1,'②':2,'③':3,'④':4,'⑤':5,'⑥':6,'⑦':7,'⑧':8,'⑨':9,'⑩':10,
+                                  '⑪':11,'⑫':12,'⑬':13,'⑭':14,'⑮':15,'⑯':16,'⑰':17,'⑱':18,'⑲':19,'⑳':20}
+                    if text in circle_map:
+                        item_type = 'circle'
+                        item_value = circle_map[text]
+
+                # 括弧付き数字パターン (1), (2), (3)
+                elif re.match(r'^\([0-9]+\)$', text):
+                    match = re.match(r'^\(([0-9]+)\)$', text)
+                    if match:
+                        item_type = 'paren'
+                        item_value = int(match.group(1))
+
+                # 孤立した1-2桁の数字
+                elif re.match(r'^[0-9]{1,2}$', text):
+                    item_type = 'plain'
+                    item_value = int(text)
+
+                if item_type and item_value:
+                    item_candidates.append({
+                        'index': i,
+                        'block': block,
+                        'type': item_type,
+                        'value': item_value
+                    })
 
             # 項番号が3個以上ある場合のみシーケンスチェック
-            if len(item_numbers) >= 3:
-                # シーケンスをチェックして異常な数字を特定
-                suspicious_indices = []
-                for i in range(1, len(item_numbers) - 1):
-                    prev_num = item_numbers[i - 1]
-                    curr_num = item_numbers[i]
-                    next_num = item_numbers[i + 1]
+            if len(item_candidates) >= 3:
+                suspicious_blocks = set()
 
+                # 連続する3つの項番号をチェック
+                for i in range(1, len(item_candidates) - 1):
+                    prev = item_candidates[i - 1]
+                    curr = item_candidates[i]
+                    next_item = item_candidates[i + 1]
+
+                    # 項番号のタイプをチェック
+                    # 前後が丸数字で、真ん中だけ普通の数字の場合は異常
+                    if prev['type'] == 'circle' and curr['type'] == 'plain' and next_item['type'] == 'circle':
+                        # 丸数字のシーケンス中に数字が挟まっている = 異常
+                        suspicious_blocks.add(id(curr['block']))
+                        if self.debug:
+                            print(f"[DEBUG] 異常な項番号（タイプ不一致）: {prev['type']}:{prev['value']} → {curr['type']}:{curr['value']} → {next_item['type']}:{next_item['value']} (ページ{page})")
+                        continue
+
+                    # 数値のシーケンスチェック
                     # 前後の数字から大きく離れている場合は異常
                     # 例: 3 → 23 → 4 の場合、23は異常
-                    if curr_num > prev_num + 10 and curr_num > next_num + 10:
-                        suspicious_indices.append(i)
+                    if curr['value'] > prev['value'] + 10 and curr['value'] > next_item['value'] + 10:
+                        suspicious_blocks.add(id(curr['block']))
                         if self.debug:
-                            print(f"[DEBUG] 異常な項番号を検出: {prev_num} → {curr_num} → {next_num} (ページ{page})")
+                            print(f"[DEBUG] 異常な項番号（値が飛躍）: {prev['value']} → {curr['value']} → {next_item['value']} (ページ{page})")
+                        continue
 
-                # 異常な項番号を削除リストに追加
-                suspicious_blocks = set()
-                for idx in suspicious_indices:
-                    suspicious_blocks.add(id(item_blocks[idx]))
+                    # より賢い判定: 前後の値が連続していて、真ん中が大きく異なる場合
+                    # 例: 3 → 23 → 4 (3と4は連続、23は異常)
+                    if abs(next_item['value'] - prev['value']) <= 2:  # 前後が連続または近接
+                        if curr['value'] > prev['value'] + 5 or curr['value'] < prev['value'] - 5:
+                            suspicious_blocks.add(id(curr['block']))
+                            if self.debug:
+                                print(f"[DEBUG] 異常な項番号（前後が連続だが中央が異常）: {prev['value']} → {curr['value']} → {next_item['value']} (ページ{page})")
 
                 # ページのブロックをフィルタリング
                 for block in page_blocks:
