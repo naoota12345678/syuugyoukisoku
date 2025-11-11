@@ -10,8 +10,13 @@ from pdf_parser import PDFParser
 from claude_validator import ClaudeValidator
 
 # データベースを環境変数で切り替え
+USE_FIREBASE = os.environ.get('USE_FIREBASE', 'false').lower() == 'true'
 USE_FIRESTORE = os.environ.get('USE_FIRESTORE', 'false').lower() == 'true'
-if USE_FIRESTORE:
+
+if USE_FIREBASE:
+    from firebase_database import FirebaseDatabase as Database
+    print("[INFO] 🔥 Using Firebase Admin SDK as database backend")
+elif USE_FIRESTORE:
     from firestore_database import FirestoreDatabase as Database
     print("[INFO] Using Firestore as database backend")
 else:
@@ -33,8 +38,8 @@ app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # データベース初期化
-if USE_FIRESTORE:
-    project_id = os.environ.get('GOOGLE_CLOUD_PROJECT', 'ocr2-435601')
+if USE_FIREBASE or USE_FIRESTORE:
+    project_id = os.environ.get('GOOGLE_CLOUD_PROJECT', 'syuugyoukisoku')
     db = Database(project_id=project_id)
 else:
     db = Database()
@@ -77,8 +82,8 @@ def upload():
 
         # 既存会社または新規会社
         if company_id:
-            # 既存会社を選択（Firestoreは文字列ID、SQLiteは整数ID）
-            if not USE_FIRESTORE:
+            # 既存会社を選択（Firebase/Firestoreは文字列ID、SQLiteは整数ID）
+            if not USE_FIREBASE and not USE_FIRESTORE:
                 company_id = int(company_id)
         elif company_name:
             # 新規会社を作成
