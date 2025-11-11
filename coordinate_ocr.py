@@ -178,11 +178,13 @@ class CoordinateOCR:
         """
         ページ番号の可能性が高いかを判定
 
-        判定基準（改善版）:
+        判定基準（修正版）:
         1. 1-3桁の数字のみ
-        2. 10以上の数字は基本的にページ番号として扱う（項番号は通常1-9）
-        3. ページの上端・下端・中央いずれでもページ番号の可能性がある
-        4. 周囲に他のテキストがない（孤立している）
+        2. 周囲のコンテキストで判定
+           - 「第」「条」などがある → 条番号として残す
+           - 丸数字（①②③）の間にある → ページ番号として除去
+           - 孤立している → ページ番号として除去
+        3. ページの上端・下端は優先的にページ番号として扱う
 
         Args:
             block: 判定対象のブロック
@@ -200,46 +202,44 @@ class CoordinateOCR:
             return False
 
         num = int(text)
-
-        # 10以上の数字は基本的にページ番号
-        # （項番号は通常①-⑨、または(1)-(9)の範囲）
-        if num >= 10:
-            # ただし、周囲にテキストがある場合は項番号の可能性
-            same_page_blocks = [b for b in all_blocks if b['page'] == block['page'] and b != block]
-
-            # 周囲50px以内に他のテキストがあるか確認
-            nearby_blocks = [
-                b for b in same_page_blocks
-                if abs(b['x_center'] - block['x_center']) < 100 and
-                   abs(b['y_center'] - block['y_center']) < 50
-            ]
-
-            # 周囲にテキストがない = ページ番号の可能性が高い
-            if not nearby_blocks:
-                return True
-
-            # 周囲にテキストがあっても、それが項目内容でない場合はページ番号
-            # （項目内容は通常50文字以上）
-            has_long_text_nearby = any(len(b['text'].strip()) > 50 for b in nearby_blocks)
-            if not has_long_text_nearby:
-                return True
-
-        # 1-9の数字の場合
-        # ページの上端または下端で、孤立している場合のみページ番号
         y_center = block['y_center']
+        same_page_blocks = [b for b in all_blocks if b['page'] == block['page'] and b != block]
+
+        # 周囲50px以内のブロックを取得
+        nearby_blocks = [
+            b for b in same_page_blocks
+            if abs(b['x_center'] - block['x_center']) < 100 and
+               abs(b['y_center'] - block['y_center']) < 50
+        ]
+
+        # 周囲のテキストを確認
+        nearby_texts = [b['text'].strip() for b in nearby_blocks]
+
+        # 条番号の一部かどうかをチェック
+        # 前後に「第」「条」「(」などがある場合は条番号として残す
+        for nearby_text in nearby_texts:
+            if re.search(r'第|条|（|章', nearby_text):
+                return False  # 条番号・章番号の一部なので残す
+
+        # ページの上端または下端で、孤立している場合はページ番号
         is_at_edge = (y_center < 150) or (y_center > page_height - 150)
+        if is_at_edge and not nearby_blocks:
+            return True
 
-        if is_at_edge:
-            same_page_blocks = [b for b in all_blocks if b['page'] == block['page'] and b != block]
-            nearby_blocks = [
-                b for b in same_page_blocks
-                if abs(b['x_center'] - block['x_center']) < 100 and
-                   abs(b['y_center'] - block['y_center']) < 50
-            ]
+        # 周囲に丸数字（項番号）がある場合
+        # → その間に挟まった数字はページ番号の可能性が高い
+        has_circle_numbers_nearby = any(
+            re.search(r'[①-⑳]', nearby_text) for nearby_text in nearby_texts
+        )
 
-            # 周囲にテキストがない = ページ番号の可能性が高い
-            if not nearby_blocks:
-                return True
+        if has_circle_numbers_nearby:
+            # 丸数字のシーケンス中にある数字はページ番号の可能性が高い
+            return True
+
+        # 周囲に長文（50文字以上）がない場合はページ番号
+        has_long_text_nearby = any(len(t) > 50 for t in nearby_texts)
+        if not has_long_text_nearby and not nearby_blocks:
+            return True
 
         # その他の場合は項番号の可能性が高い
         return False
