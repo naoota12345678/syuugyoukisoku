@@ -1,19 +1,26 @@
 # 🚨 Cloud Run デプロイルール（絶対遵守）🚨
 
+## ⚠️ 重要：いついかなる時も必ず守ること
+
+**あらゆる変更（コード、環境変数、設定など）の後は、必ず最新リビジョンにトラフィックを切り替える**
+
 ## 問題の本質
 - **新しいコードはデプロイされるが、トラフィックが古いリビジョンに向いたまま**
+- **環境変数を変更しても、新しいリビジョンが作成されるがトラフィックは自動で切り替わらない**
 - 結果：ユーザーは古いコードを見続ける
 
 ## ✅ 正しいデプロイ手順（必須）
 
-### STEP 1: コードをコミット・プッシュ
+### 【パターンA】コード変更時
+
+#### STEP 1: コードをコミット・プッシュ
 ```bash
 git add <変更ファイル>
 git commit -m "変更内容"
 git push origin main
 ```
 
-### STEP 2: ビルドがSUCCESSになるまで待つ（最重要）
+#### STEP 2: ビルドがSUCCESSになるまで待つ（最重要）
 ```bash
 # ビルドの開始を確認
 sleep 15 && gcloud builds list --limit=1
@@ -24,7 +31,7 @@ gcloud builds list --limit=1
 
 **⚠️ 重要**: ビルドのSTATUSが`SUCCESS`になるまで、次のステップに進んではいけない！
 
-### STEP 3: 最新リビジョンにトラフィックを切り替え
+#### STEP 3: 最新リビジョンにトラフィックを切り替え
 ```bash
 # 最新リビジョンを取得
 LATEST_REV=$(gcloud run revisions list --service=syuugyoukisoku --region=asia-northeast1 --limit=1 --format="value(metadata.name)")
@@ -36,7 +43,7 @@ echo "最新リビジョン: $LATEST_REV"
 gcloud run services update-traffic syuugyoukisoku --region=asia-northeast1 --to-revisions=$LATEST_REV=100
 ```
 
-### STEP 4: 動作確認
+#### STEP 4: 動作確認
 ```bash
 # 現在のトラフィック設定を確認
 gcloud run services describe syuugyoukisoku --region=asia-northeast1 --format="table(status.traffic)"
@@ -44,6 +51,44 @@ gcloud run services describe syuugyoukisoku --region=asia-northeast1 --format="t
 
 ブラウザで動作確認：
 https://syuugyoukisoku-bsdy2np4aa-an.a.run.app
+
+---
+
+### 【パターンB】環境変数変更時（コード変更なし）
+
+環境変数を変更した場合も新しいリビジョンが作成されますが、トラフィックは自動で切り替わりません。
+
+#### STEP 1: 環境変数を変更
+```bash
+# 例：デバッグモードを有効化
+gcloud run services update syuugyoukisoku --region=asia-northeast1 --set-env-vars PDF_PARSER_DEBUG=1
+```
+
+#### STEP 2: すぐにトラフィックを最新リビジョンに切り替え
+```bash
+# 最新リビジョンを取得
+LATEST_REV=$(gcloud run revisions list --service=syuugyoukisoku --region=asia-northeast1 --limit=1 --format="value(metadata.name)")
+
+# リビジョン名を確認
+echo "最新リビジョン: $LATEST_REV"
+
+# トラフィックを100%最新リビジョンに向ける
+gcloud run services update-traffic syuugyoukisoku --region=asia-northeast1 --to-revisions=$LATEST_REV=100
+```
+
+#### STEP 3: 動作確認
+```bash
+# 現在のトラフィック設定を確認
+gcloud run services describe syuugyoukisoku --region=asia-northeast1 --format="table(status.traffic)"
+```
+
+---
+
+### 【簡易版】すべてのデプロイ後に実行
+```bash
+# ensure_latest_traffic.shを実行（あらゆる変更後に必ず実行）
+bash ensure_latest_traffic.sh
+```
 
 ---
 
