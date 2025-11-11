@@ -288,6 +288,10 @@ class CoordinateOCR:
         """
         Vision APIレスポンスを処理して完全テキストを抽出
 
+        Args:
+            response: Vision APIのレスポンス
+            debug: Trueの場合、詳細なデバッグ情報を出力
+
         Returns:
             {
                 'raw_text': '完全なテキスト',
@@ -298,25 +302,33 @@ class CoordinateOCR:
         # ステップ1: すべてのブロックを抽出
         all_blocks = self.extract_all_blocks(response)
         if debug:
+            print(f"\n{'='*80}")
             print(f"[ステップ1] 抽出されたブロック数: {len(all_blocks)}")
+            self._debug_print_item_numbers(all_blocks, "抽出直後")
 
         # ステップ2: 座標順に並べ替え
         sorted_blocks = self.sort_blocks_by_coordinates(all_blocks)
         if debug:
+            print(f"\n{'='*80}")
             print(f"[ステップ2] 並べ替え完了")
+            self._debug_print_item_numbers(sorted_blocks, "並べ替え後")
 
         # ステップ3: ノイズ除去（保守的）
         cleaned_blocks = self.remove_noise_blocks(sorted_blocks, aggressive=False)
         removed_count = len(sorted_blocks) - len(cleaned_blocks)
         if debug:
+            print(f"\n{'='*80}")
             print(f"[ステップ3] ノイズ除去: {removed_count}個のブロックを除去")
             if removed_count > 0:
-                removed_texts = [b['text'] for b in sorted_blocks if b not in cleaned_blocks]
-                print(f"  除去されたテキスト: {removed_texts[:5]}")  # 最初の5個を表示
+                removed_blocks = [b for b in sorted_blocks if b not in cleaned_blocks]
+                print(f"  除去されたブロック:")
+                for b in removed_blocks[:10]:  # 最初の10個を表示
+                    print(f"    - '{b['text'][:30]}' (page={b['page']}, y={b['y_center']:.0f})")
 
         # ステップ4: テキストに結合
         full_text = self.merge_blocks_to_text(cleaned_blocks)
         if debug:
+            print(f"\n{'='*80}")
             print(f"[ステップ4] 完全テキスト生成: {len(full_text)}文字")
 
         return {
@@ -330,6 +342,44 @@ class CoordinateOCR:
                 'total_chars': len(full_text)
             }
         }
+
+    def _debug_print_item_numbers(self, blocks: List[Dict], stage: str):
+        """
+        デバッグ用: 項番号を含むブロックの情報を出力
+
+        Args:
+            blocks: ブロックのリスト
+            stage: 処理段階の名前
+        """
+        # 項番号パターン
+        item_patterns = [
+            re.compile(r'^[①-⑳]+'),  # 丸数字
+            re.compile(r'^\([0-9]+\)'),  # (1)(2)(3)
+            re.compile(r'^[0-9]+[.．、]'),  # 1. 2. 3.
+            re.compile(r'^\d{1,2}$'),  # 孤立した数字
+        ]
+
+        print(f"\n【{stage}の項番号パターン】")
+        item_blocks = []
+
+        for i, block in enumerate(blocks):
+            text = block['text'].strip()
+            for pattern in item_patterns:
+                if pattern.match(text):
+                    item_blocks.append((i, block))
+                    break
+
+        if not item_blocks:
+            print("  項番号パターンのブロックなし")
+            return
+
+        print(f"  検出された項番号: {len(item_blocks)}個")
+        print(f"\n  {'順序':<6} {'ページ':<6} {'X座標':<8} {'Y座標':<8} {'テキスト':<30}")
+        print(f"  {'-'*70}")
+
+        for i, block in item_blocks[:20]:  # 最初の20個を表示
+            text_preview = block['text'].strip()[:30]
+            print(f"  {i:<6} {block['page']:<6} {block['x_center']:<8.0f} {block['y_center']:<8.0f} '{text_preview}'")
 
 
 def test_coordinate_ocr():
