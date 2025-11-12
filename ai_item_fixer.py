@@ -9,6 +9,11 @@ OCRで抽出したテキストの項番号のみをAIで修正する
 import os
 from typing import Optional
 
+# Disable proxy for Anthropic client (must be before import)
+for key in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']:
+    if key in os.environ:
+        del os.environ[key]
+
 
 class AIItemNumberFixer:
     """AIを使って項番号のみを修正"""

@@ -10,6 +10,11 @@ OCRで抽出したテキストの構造（章・条・項番号）のみを修�
 import os
 from typing import Optional
 
+# Disable proxy for Anthropic client (must be before import)
+for key in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']:
+    if key in os.environ:
+        del os.environ[key]
+
 
 class AIStructureFixer:
     """AIを使って就業規則の構造（章・条・項番号）のみを修正"""
