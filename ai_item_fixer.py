@@ -7,7 +7,7 @@ OCRで抽出したテキストの項番号のみをAIで修正する
 """
 
 import os
-import google.generativeai as genai
+from anthropic import Anthropic
 from typing import Optional
 
 
@@ -17,18 +17,16 @@ class AIItemNumberFixer:
     def __init__(self, api_key: Optional[str] = None):
         """
         Args:
-            api_key: Gemini API Key（省略時は環境変数から取得）
+            api_key: Claude API Key（省略時は環境変数から取得）
         """
         if api_key is None:
-            api_key = os.environ.get("GEMINI_API_KEY")
+            api_key = os.environ.get("ANTHROPIC_API_KEY")
 
         if not api_key:
-            raise ValueError("GEMINI_API_KEY環境変数が設定されていません")
+            raise ValueError("ANTHROPIC_API_KEY環境変数が設定されていません")
 
-        genai.configure(api_key=api_key)
-
-        # Gemini Flash 2.0を使用（高速・低コスト）
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        # Claude APIクライアントを初期化
+        self.client = Anthropic(api_key=api_key)
 
     def fix_item_numbers(self, text: str) -> str:
         """
@@ -75,20 +73,21 @@ class AIItemNumberFixer:
 {text}
 ```
 
-修正後のテキストのみを出力してください（説明は不要）。
-"""
+修正後のテキストのみを出力してください（説明は不要）。"""
 
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config={
-                    "temperature": 0.1,  # 低温度で安定した出力
-                    "top_p": 0.95,
-                    "max_output_tokens": 8192,
-                }
+            # Claude Haiku 3.5を使用（高速・低コスト）
+            response = self.client.messages.create(
+                model="claude-3-5-haiku-20241022",
+                max_tokens=8192,
+                temperature=0.1,
+                messages=[{
+                    "role": "user",
+                    "content": prompt
+                }]
             )
 
-            return response.text.strip()
+            return response.content[0].text.strip()
 
         except Exception as e:
             print(f"AI修正エラー: {e}")
