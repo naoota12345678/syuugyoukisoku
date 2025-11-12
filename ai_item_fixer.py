@@ -25,8 +25,14 @@ class AIItemNumberFixer:
         if not api_key:
             raise ValueError("ANTHROPIC_API_KEY環境変数が設定されていません")
 
-        # Claude APIクライアントを初期化
-        self.client = Anthropic(api_key=api_key)
+        # Claude APIクライアントを初期化（バージョン互換性対応）
+        try:
+            # 新しいバージョンのAnthropicライブラリ
+            self.client = Anthropic(api_key=api_key)
+        except TypeError:
+            # 古いバージョンの場合
+            import anthropic
+            self.client = anthropic.Client(api_key=api_key)
 
     def fix_item_numbers(self, text: str) -> str:
         """
