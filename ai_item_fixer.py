@@ -7,7 +7,6 @@ OCRで抽出したテキストの項番号のみをAIで修正する
 """
 
 import os
-from anthropic import Anthropic
 from typing import Optional
 
 
@@ -19,20 +18,26 @@ class AIItemNumberFixer:
         Args:
             api_key: Claude API Key（省略時は環境変数から取得）
         """
-        if api_key is None:
-            api_key = os.environ.get("ANTHROPIC_API_KEY")
+        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
 
-        if not api_key:
+        if not self.api_key:
             raise ValueError("ANTHROPIC_API_KEY環境変数が設定されていません")
 
-        # Claude APIクライアントを初期化（バージョン互換性対応）
+        # Try to initialize with newer library version
         try:
-            # 新しいバージョンのAnthropicライブラリ
-            self.client = Anthropic(api_key=api_key)
-        except TypeError:
-            # 古いバージョンの場合
-            import anthropic
-            self.client = anthropic.Client(api_key=api_key)
+            from anthropic import Anthropic
+            # Don't pass any proxy parameters - let library handle defaults
+            self.client = Anthropic(
+                api_key=self.api_key,
+                # Removed all proxy-related parameters
+            )
+        except Exception as e:
+            # If still fails, try alternative initialization
+            try:
+                import anthropic
+                self.client = anthropic.Client(api_key=self.api_key)
+            except:
+                raise Exception(f"Failed to initialize Anthropic client: {e}")
 
     def fix_item_numbers(self, text: str) -> str:
         """
