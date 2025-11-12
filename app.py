@@ -682,6 +682,68 @@ def delete_company(company_id):
 
     return jsonify({"success": True})
 
+@app.route('/api/fix_structure/<regulation_id>', methods=['POST'])
+def fix_structure(regulation_id):
+    """AI構造修正を実行（章・条・項番号のみ修正、文章は触らない）"""
+    try:
+        regulation = db.get_regulation_by_id(regulation_id)
+        if not regulation:
+            return jsonify({"success": False, "error": "規程が見つかりません"}), 404
+
+        company_id = regulation['company_id']
+
+        # 規程内容を取得
+        content_data = db.get_regulation_content(company_id, regulation_id)
+        if not content_data:
+            return jsonify({"success": False, "error": "規程内容が見つかりません"}), 404
+
+        raw_text = content_data.get('raw_text', '')
+        if not raw_text:
+            return jsonify({"success": False, "error": "規程のテキストが見つかりません"}), 404
+
+        # AI構造修正を実行
+        from ai_structure_fixer import AIStructureFixer
+        structure_fixer = AIStructureFixer()
+
+        print(f"[AI構造修正] 開始: regulation_id={regulation_id}, 文字数={len(raw_text)}")
+        fixed_text = structure_fixer.fix_structure(raw_text)
+        print(f"[AI構造修正] 完了: 修正後文字数={len(fixed_text)}")
+
+        # 修正後のテキストを新バージョンとして保存
+        current_version = regulation.get('current_version', 1)
+        new_version = current_version + 1
+
+        db.save_regulation_content(
+            company_id=company_id,
+            regulation_id=regulation_id,
+            raw_text=fixed_text,
+            structured_content=None,  # 構造解析は後で
+            tables=content_data.get('tables', [])
+        )
+
+        db.create_version(
+            company_id=company_id,
+            regulation_id=regulation_id,
+            version_number=new_version,
+            raw_text=fixed_text,
+            structured_content=None,
+            note="AI構造修正: 章・条・項番号を整理"
+        )
+
+        # 現在のバージョン番号を更新
+        db.update_regulation_version(regulation_id, new_version)
+
+        return jsonify({
+            "success": True,
+            "message": f"バージョン{new_version}として保存しました。\n章・条・項番号が整理されました。"
+        })
+
+    except Exception as e:
+        print(f"[AI構造修正エラー] {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == '__main__':
     print("Starting Flask app...")
     print("Routes:")
