@@ -8,11 +8,7 @@ OCRで抽出したテキストの項番号のみをAIで修正する
 
 import os
 from typing import Optional
-
-# Disable proxy for Anthropic client (must be before import)
-for key in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']:
-    if key in os.environ:
-        del os.environ[key]
+import httpx
 
 
 class AIItemNumberFixer:
@@ -28,21 +24,19 @@ class AIItemNumberFixer:
         if not self.api_key:
             raise ValueError("ANTHROPIC_API_KEY環境変数が設定されていません")
 
-        # Try to initialize with newer library version
+        # カスタムHTTPクライアントを作成（proxiesなし）
         try:
             from anthropic import Anthropic
-            # Don't pass any proxy parameters - let library handle defaults
+
+            # proxiesを明示的にNoneにしたカスタムクライアント
+            http_client = httpx.Client(timeout=60.0)
+
             self.client = Anthropic(
                 api_key=self.api_key,
-                # Removed all proxy-related parameters
+                http_client=http_client
             )
         except Exception as e:
-            # If still fails, try alternative initialization
-            try:
-                import anthropic
-                self.client = anthropic.Client(api_key=self.api_key)
-            except:
-                raise Exception(f"Failed to initialize Anthropic client: {e}")
+            raise Exception(f"Failed to initialize Anthropic client: {e}")
 
     def fix_item_numbers(self, text: str) -> str:
         """

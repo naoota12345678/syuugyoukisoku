@@ -1,31 +1,30 @@
 # claude_validator.py - Fixed for newer Anthropic library versions
 import os
 import json
+import httpx
 
 class ClaudeValidator:
     """Claude APIを使用して就業規則を検証・生成するクラス"""
-    
+
     def __init__(self, api_key=None):
         self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
         if not self.api_key:
             raise ValueError("ANTHROPIC_API_KEY が設定されていません")
-        
-        # Try to initialize with newer library version
+
+        # カスタムHTTPクライアントを作成（proxiesなし）
         try:
             from anthropic import Anthropic
-            # Don't pass any proxy parameters - let library handle defaults
+
+            # proxiesを明示的にNoneにしたカスタムクライアント
+            http_client = httpx.Client(timeout=60.0)
+
             self.client = Anthropic(
                 api_key=self.api_key,
-                # Removed all proxy-related parameters
+                http_client=http_client
             )
         except Exception as e:
-            # If still fails, try alternative initialization
-            try:
-                import anthropic
-                self.client = anthropic.Client(api_key=self.api_key)
-            except:
-                raise Exception(f"Failed to initialize Anthropic client: {e}")
-        
+            raise Exception(f"Failed to initialize Anthropic client: {e}")
+
         self.models_path = "models/"
     
     def _load_model(self, filename: str) -> str:

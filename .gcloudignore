@@ -29,3 +29,9 @@ add_*.py
 reprocess_*.py
 temp_*.txt
 AI_SETUP.txt
+input/
+output/
+complete_text_extractor.py
+investigate_23.py
+test_item_numbers.py
+HANDOVER.md
