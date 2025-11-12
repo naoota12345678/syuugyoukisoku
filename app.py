@@ -714,6 +714,20 @@ def fix_structure(regulation_id):
         fixed_text = structure_fixer.fix_structure(raw_text)
         print(f"[AI構造修正] 完了: 修正後文字数={len(fixed_text)}")
 
+        # 警告を検出して分離
+        warnings = []
+        if "⚠️ 警告:" in fixed_text or "⚠️警告:" in fixed_text:
+            lines = fixed_text.split('\n')
+            warning_start = -1
+            for i, line in enumerate(lines):
+                if "⚠️ 警告:" in line or "⚠️警告:" in line:
+                    warning_start = i
+                    break
+
+            if warning_start >= 0:
+                warnings = [line.strip() for line in lines[warning_start:] if line.strip()]
+                fixed_text = '\n'.join(lines[:warning_start]).strip()
+
         # 修正後のテキストを新バージョンとして保存
         current_version = regulation.get('current_version', 1)
         new_version = current_version + 1
@@ -727,9 +741,15 @@ def fix_structure(regulation_id):
             tables=content_data.get('tables', [])
         )
 
+        # メッセージ作成
+        message = f"バージョン{new_version}として保存しました。\n章・条・項番号が整理されました。"
+        if warnings:
+            message += "\n\n" + "\n".join(warnings)
+
         return jsonify({
             "success": True,
-            "message": f"バージョン{new_version}として保存しました。\n章・条・項番号が整理されました。"
+            "message": message,
+            "warnings": warnings
         })
 
     except Exception as e:
