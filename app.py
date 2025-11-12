@@ -170,8 +170,11 @@ def upload():
             print("raw_textのみ保存します（構造化はスキップ）")
             structure = []
 
-            # raw_textと表データを保存（構造化は後で行う）
-            db.save_regulation_content(company_id, regulation_id, structure, version=1, raw_text=raw_text, tables=tables)
+            # raw_textと表データをバージョン0として保存（OCR生データ）
+            db.save_regulation_content(company_id, regulation_id, structure, version=0, raw_text=raw_text, tables=tables)
+
+            # current_versionは0に設定
+            db.update_regulation_version(regulation_id, 0)
 
             # 確認ページへリダイレクト
             return jsonify({
