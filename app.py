@@ -3,6 +3,11 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 
+# Disable proxy for Anthropic client (fix for proxies error)
+for key in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']:
+    if key in os.environ:
+        del os.environ[key]
+
 # Version: 2025-11-10-v2 (バージョン履歴エラー修正版)
 from flask import Flask, render_template, request, jsonify, redirect
 from werkzeug.utils import secure_filename
