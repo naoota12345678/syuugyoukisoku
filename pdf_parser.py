@@ -21,7 +21,7 @@ except ImportError:
 class PDFParser:
     """PDFから就業規則を抽出するクラス（高精度OCR対応）"""
 
-    def __init__(self, use_ocr=True, debug=False):
+    def __init__(self, use_ocr=True, debug=False, use_ai_fix=True):
         # 章のパターン（タイトルが同じ行または次の行にある場合に対応）
         self.chapter_pattern = re.compile(r'^第[〇一二三四五六七八九十百0-9]+章')
         self.chapter_with_title_pattern = re.compile(r'^第[〇一二三四五六七八九十百0-9]+章\s+(.+)')
@@ -34,12 +34,25 @@ class PDFParser:
         self.page_marker_pattern = re.compile(r'^###\s*ページ\s+\d+\s*###')
         self.use_ocr = use_ocr and VISION_API_AVAILABLE
         self.debug = debug  # デバッグモードフラグ
+        self.use_ai_fix = use_ai_fix  # AI項番号修正を使用するか
 
         # 構造解析器を初期化
         self.structure_analyzer = StructureAnalyzer()
 
         # 座標ベースOCRを初期化（デバッグフラグを渡す）
         self.coordinate_ocr = CoordinateOCR(debug=self.debug)
+
+        # AI項番号修正器を初期化（use_ai_fix=Trueの場合のみ）
+        self.ai_fixer = None
+        if self.use_ai_fix:
+            try:
+                from ai_item_fixer import AIItemNumberFixer
+                self.ai_fixer = AIItemNumberFixer()
+                if self.debug:
+                    print("AI項番号修正を有効化しました")
+            except Exception as e:
+                print(f"AI項番号修正の初期化に失敗: {e}")
+                self.use_ai_fix = False
 
         # Google Cloud Vision API認証設定
         # GOOGLE_APPLICATION_CREDENTIALSがJSON文字列の場合、
@@ -387,7 +400,19 @@ class PDFParser:
                         except:
                             pass
 
-            return "\n".join(all_text), all_tables
+            # 全ページのテキストを結合
+            full_text = "\n".join(all_text)
+
+            # AI項番号修正を適用（有効な場合のみ）
+            if self.use_ai_fix and self.ai_fixer:
+                try:
+                    print("\nAIで項番号を修正中...")
+                    full_text = self.ai_fixer.fix_item_numbers(full_text)
+                    print("AI修正完了")
+                except Exception as e:
+                    print(f"AI修正エラー（元のテキストを使用）: {e}")
+
+            return full_text, all_tables
 
         except Exception as e:
             print(f"Vision API error: {str(e)}")

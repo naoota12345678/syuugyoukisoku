@@ -1,0 +1,987 @@
+
+
+
+
+
+
+
+
+
+[2025-11-10 10:22:47 +0000] [2] [INFO] Booting worker with pid: 2
+[2025-11-10 10:22:47 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 10:22:47 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 10:22:47 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.
+
+
+
+[2025-11-10 10:10:42 +0000] [1] [INFO] Shutting down: Master
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 10:10:42 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 10:10:41 +0000] [1] [INFO] Handling signal: term
+[2025-11-10 10:06:53 +0000] [1] [INFO] Shutting down: Master
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 10:06:51 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 10:06:50 +0000] [1] [INFO] Handling signal: term
+
+
+[2025-11-10 09:59:36 +0000] [1] [INFO] Shutting down: Master
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 09:59:34 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 09:59:34 +0000] [1] [INFO] Handling signal: term
+  return query.where(field_path, op_string, value)
+/usr/local/lib/python3.11/site-packages/google/cloud/firestore_v1/base_collection.py:295: UserWarning: Detected filter using positional arguments. Prefer using the 'filter' keyword argument instead.
+
+
+
+
+
+[2025-11-10 09:55:43 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 09:55:43 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 09:55:43 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 09:55:43 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
+[2025-11-10 09:55:41 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 09:55:41 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 09:55:41 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 09:55:41 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 345, in regulation_view_version
+    content_data = db.get_regulation_content(regulation_id, version=version)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_regulation_content() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 09:54:27,336] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/view/version/1 [GET]
+
+
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 345, in regulation_view_version
+    content_data = db.get_regulation_content(regulation_id, version=version)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_regulation_content() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 09:54:13,868] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/view/version/1 [GET]
+
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 345, in regulation_view_version
+    content_data = db.get_regulation_content(regulation_id, version=version)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_regulation_content() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 09:45:27,001] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/view/version/1 [GET]
+
+
+
+
+
+
+[2025-11-10 09:37:13 +0000] [2] [INFO] Booting worker with pid: 2
+[2025-11-10 09:37:13 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 09:37:13 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 09:37:13 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.
+
+[2025-11-10 08:27:26 +0000] [1] [INFO] Shutting down: Master
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 08:27:26 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 08:27:25 +0000] [1] [INFO] Handling signal: term
+[2025-11-10 08:23:53 +0000] [1] [INFO] Shutting down: Master
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 08:23:50 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 08:23:50 +0000] [1] [INFO] Handling signal: term
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 410, in regulation_history
+    version_num = ver['version']
+                  ~~~^^^^^^^^^^^
+KeyError: 'version'
+[2025-11-10 08:13:46,337] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+[2025-11-10 08:13:38 +0000] [1] [INFO] Shutting down: Master
+
+
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 08:13:36 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 08:13:35 +0000] [1] [INFO] Handling signal: term
+[2025-11-10 08:13:14 +0000] [1] [INFO] Shutting down: Master
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 08:13:14 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 08:13:14 +0000] [1] [INFO] Handling signal: term
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 410, in regulation_history
+    version_num = ver['version']
+                  ~~~^^^^^^^^^^^
+KeyError: 'version'
+[2025-11-10 08:13:05,778] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 410, in regulation_history
+    version_num = ver['version']
+                  ~~~^^^^^^^^^^^
+KeyError: 'version'
+[2025-11-10 08:12:55,421] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+[2025-11-10 08:12:22 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 08:12:22 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 08:12:22 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 08:12:22 +0000] [1] [INFO] Starting gunicorn 21.2.0
+
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
+[2025-11-10 08:12:19 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 08:12:19 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 08:12:19 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 08:12:19 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 405, in regulation_history
+    all_modifications = db.get_modification_history(regulation_id)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_modification_history() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 08:04:46,463] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 405, in regulation_history
+    all_modifications = db.get_modification_history(regulation_id)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_modification_history() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 08:04:32,456] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 405, in regulation_history
+    all_modifications = db.get_modification_history(regulation_id)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_modification_history() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 08:03:52,798] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+
+[2025-11-10 07:59:17 +0000] [1] [INFO] Shutting down: Master
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 07:59:15 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 07:59:15 +0000] [1] [INFO] Handling signal: term
+[2025-11-10 07:58:08 +0000] [2] [INFO] Booting worker with pid: 2
+[2025-11-10 07:58:08 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 07:58:08 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 07:58:08 +0000] [1] [INFO] Starting gunicorn 21.2.0
+
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
+[2025-11-10 07:58:06 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 07:58:06 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 07:58:06 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 07:58:06 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 07:52:34,465] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 07:52:16,484] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+[2025-11-10 07:52:08 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 07:52:08 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 07:52:08 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 07:52:08 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
+[2025-11-10 06:57:20 +0000] [1] [INFO] Shutting down: Master
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 06:57:18 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 06:57:17 +0000] [1] [INFO] Handling signal: term
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 06:42:11,949] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 06:34:03,103] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+
+[2025-11-10 06:32:52 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 06:32:52 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 06:32:52 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 06:32:52 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
+
+
+[2025-11-10 05:21:20 +0000] [1] [INFO] Shutting down: Master
+raw_textのみ保存します（構造化はスキップ）
+[DEBUG] raw_text length: 27750
+  表メタデータを保存: tables_metadata.json
+  表を保存: page_13_table.csv
+  表を保存: page_12_table.csv
+元のPDFを保存: /app/uploads/regulation_tP0BSVSemrnGy5PyGZ0v/original.pdf
+  2個の表を検出しました
+Vision APIで27750文字抽出しました
+  ページ 30/30 処理中... OK (153文字)
+  ページ 29/30 処理中... OK (984文字)
+  ページ 28/30 処理中... OK (951文字)
+  ページ 27/30 処理中... OK (859文字)
+  ページ 26/30 処理中... OK (1057文字)
+  ページ 25/30 処理中... OK (1087文字)
+  ページ 24/30 処理中... OK (1099文字)
+  ページ 23/30 処理中... OK (674文字)
+  ページ 22/30 処理中... OK (985文字)
+  ページ 21/30 処理中... OK (1156文字)
+  ページ 20/30 処理中... OK (1043文字)
+  ページ 19/30 処理中... OK (963文字)
+  ページ 18/30 処理中... OK (978文字)
+  ページ 17/30 処理中... OK (1022文字)
+  ページ 16/30 処理中... OK (955文字)
+  ページ 15/30 処理中... OK (954文字)
+  ページ 14/30 処理中... OK (939文字)
+  ページ 13/30 処理中... OK (1147文字, 表1個)
+  ページ 12/30 処理中... OK (1273文字, 表1個)
+  ページ 11/30 処理中... OK (741文字)
+  ページ 10/30 処理中... OK (1111文字)
+  ページ 9/30 処理中... OK (972文字)
+  ページ 8/30 処理中... OK (780文字)
+  ページ 7/30 処理中... OK (681文字)
+  ページ 6/30 処理中... OK (956文字)
+  ページ 5/30 処理中... OK (933文字)
+  ページ 4/30 処理中... OK (876文字)
+  ページ 3/30 処理中... OK (894文字)
+  ページ 2/30 処理中... OK (850文字)
+  ページ 1/30 処理中... OK (177文字)
+30ページをOCR処理中...
+Google Cloud Vision APIで高精度OCR処理を開始します...
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 05:21:18 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 05:21:17 +0000] [1] [INFO] Handling signal: term
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 05:06:13,497] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 05:03:13,023] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 05:03:02,811] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 04:51:32,122] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 04:51:26,090] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 04:51:25,147] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 04:46:50,382] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 04:36:14,775] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 04:34:25,762] ERROR in app: Exception on /regulation/tP0BSVSemrnGy5PyGZ0v/history [GET]
+
+
+
+
+
+
+
+
+
+[2025-11-10 04:31:37 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 04:31:37 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 04:31:37 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 04:31:37 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
+
+
+[2025-11-10 04:15:30 +0000] [1] [INFO] Shutting down: Master
+raw_textのみ保存します（構造化はスキップ）
+[DEBUG] raw_text length: 27752
+  表メタデータを保存: tables_metadata.json
+  表を保存: page_13_table.csv
+  表を保存: page_12_table.csv
+元のPDFを保存: /app/uploads/regulation_XX6MJlzwyUfpr01PSPrj/original.pdf
+  2個の表を検出しました
+Vision APIで27752文字抽出しました
+  ページ 30/30 処理中... OK (153文字)
+  ページ 29/30 処理中... OK (984文字)
+  ページ 28/30 処理中... OK (951文字)
+  ページ 27/30 処理中... OK (859文字)
+  ページ 26/30 処理中... OK (1057文字)
+  ページ 25/30 処理中... OK (1087文字)
+  ページ 24/30 処理中... OK (1099文字)
+  ページ 23/30 処理中... OK (674文字)
+  ページ 22/30 処理中... OK (985文字)
+  ページ 21/30 処理中... OK (1156文字)
+  ページ 20/30 処理中... OK (1043文字)
+  ページ 19/30 処理中... OK (963文字)
+  ページ 18/30 処理中... OK (978文字)
+  ページ 17/30 処理中... OK (1022文字)
+  ページ 16/30 処理中... OK (955文字)
+  ページ 15/30 処理中... OK (954文字)
+  ページ 14/30 処理中... OK (939文字)
+  ページ 13/30 処理中... OK (1147文字, 表1個)
+  ページ 12/30 処理中... OK (1273文字, 表1個)
+  ページ 11/30 処理中... OK (741文字)
+  ページ 10/30 処理中... OK (1111文字)
+  ページ 9/30 処理中... OK (972文字)
+  ページ 8/30 処理中... OK (780文字)
+  ページ 7/30 処理中... OK (681文字)
+  ページ 6/30 処理中... OK (956文字)
+  ページ 5/30 処理中... OK (933文字)
+  ページ 4/30 処理中... OK (878文字)
+  ページ 3/30 処理中... OK (894文字)
+  ページ 2/30 処理中... OK (850文字)
+  ページ 1/30 処理中... OK (177文字)
+30ページをOCR処理中...
+Google Cloud Vision APIで高精度OCR処理を開始します...
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 04:15:28 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 04:15:27 +0000] [1] [INFO] Handling signal: term
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 03:56:03,119] ERROR in app: Exception on /regulation/vPcE1GfXY0Onb3DSrEHy/history [GET]
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app.py", line 401, in regulation_history
+    versions = db.get_all_versions(regulation_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: FirestoreDatabase.get_all_versions() missing 1 required positional argument: 'regulation_id'
+[2025-11-10 03:55:58,559] ERROR in app: Exception on /regulation/W5dbSIxYoydOmrKxwEHm/history [GET]
+
+[2025-11-10 03:55:34 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 03:55:34 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 03:55:34 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 03:55:34 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
+
+
+[2025-11-10 03:30:40 +0000] [1] [INFO] Shutting down: Master
+raw_textのみ保存します（構造化はスキップ）
+[DEBUG] raw_text length: 27750
+  表メタデータを保存: tables_metadata.json
+  表を保存: page_13_table.csv
+  表を保存: page_12_table.csv
+元のPDFを保存: /app/uploads/regulation_W5dbSIxYoydOmrKxwEHm/original.pdf
+  2個の表を検出しました
+Vision APIで27750文字抽出しました
+  ページ 30/30 処理中... OK (153文字)
+  ページ 29/30 処理中... OK (984文字)
+  ページ 28/30 処理中... OK (951文字)
+  ページ 27/30 処理中... OK (859文字)
+  ページ 26/30 処理中... OK (1057文字)
+  ページ 25/30 処理中... OK (1087文字)
+  ページ 24/30 処理中... OK (1099文字)
+  ページ 23/30 処理中... OK (674文字)
+  ページ 22/30 処理中... OK (985文字)
+  ページ 21/30 処理中... OK (1156文字)
+  ページ 20/30 処理中... OK (1043文字)
+  ページ 19/30 処理中... OK (963文字)
+  ページ 18/30 処理中... OK (978文字)
+  ページ 17/30 処理中... OK (1022文字)
+  ページ 16/30 処理中... OK (955文字)
+  ページ 15/30 処理中... OK (954文字)
+  ページ 14/30 処理中... OK (939文字)
+  ページ 13/30 処理中... OK (1147文字, 表1個)
+  ページ 12/30 処理中... OK (1273文字, 表1個)
+  ページ 11/30 処理中... OK (741文字)
+  ページ 10/30 処理中... OK (1111文字)
+  ページ 9/30 処理中... OK (972文字)
+  ページ 8/30 処理中... OK (780文字)
+  ページ 7/30 処理中... OK (681文字)
+  ページ 6/30 処理中... OK (956文字)
+  ページ 5/30 処理中... OK (933文字)
+  ページ 4/30 処理中... OK (876文字)
+  ページ 3/30 処理中... OK (894文字)
+  ページ 2/30 処理中... OK (850文字)
+  ページ 1/30 処理中... OK (177文字)
+30ページをOCR処理中...
+Google Cloud Vision APIで高精度OCR処理を開始します...
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 03:30:38 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 03:30:37 +0000] [1] [INFO] Handling signal: term
+
+
+
+
+
+
+[2025-11-10 03:13:52 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 03:13:52 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 03:13:52 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 03:13:52 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
+
+
+
+
+
+
+
+
+
+
+[2025-11-10 01:13:10 +0000] [1] [INFO] Shutting down: Master
+raw_textのみ保存します（構造化はスキップ）
+[DEBUG] raw_text length: 27750
+  表メタデータを保存: tables_metadata.json
+  表を保存: page_13_table.csv
+  表を保存: page_12_table.csv
+元のPDFを保存: /app/uploads/regulation_vPcE1GfXY0Onb3DSrEHy/original.pdf
+  2個の表を検出しました
+Vision APIで27750文字抽出しました
+  ページ 30/30 処理中... OK (153文字)
+  ページ 29/30 処理中... OK (984文字)
+  ページ 28/30 処理中... OK (951文字)
+  ページ 27/30 処理中... OK (859文字)
+  ページ 26/30 処理中... OK (1057文字)
+  ページ 25/30 処理中... OK (1087文字)
+  ページ 24/30 処理中... OK (1099文字)
+  ページ 23/30 処理中... OK (674文字)
+  ページ 22/30 処理中... OK (985文字)
+  ページ 21/30 処理中... OK (1156文字)
+  ページ 20/30 処理中... OK (1043文字)
+  ページ 19/30 処理中... OK (963文字)
+  ページ 18/30 処理中... OK (978文字)
+  ページ 17/30 処理中... OK (1022文字)
+  ページ 16/30 処理中... OK (955文字)
+  ページ 15/30 処理中... OK (954文字)
+  ページ 14/30 処理中... OK (939文字)
+  ページ 13/30 処理中... OK (1147文字, 表1個)
+  ページ 12/30 処理中... OK (1273文字, 表1個)
+  ページ 11/30 処理中... OK (741文字)
+  ページ 10/30 処理中... OK (1111文字)
+  ページ 9/30 処理中... OK (972文字)
+  ページ 8/30 処理中... OK (780文字)
+  ページ 7/30 処理中... OK (681文字)
+  ページ 6/30 処理中... OK (956文字)
+  ページ 5/30 処理中... OK (933文字)
+  ページ 4/30 処理中... OK (876文字)
+  ページ 3/30 処理中... OK (894文字)
+  ページ 2/30 処理中... OK (850文字)
+  ページ 1/30 処理中... OK (177文字)
+30ページをOCR処理中...
+Google Cloud Vision APIで高精度OCR処理を開始します...
+AI Error: ANTHROPIC_API_KEY が設定されていません
+Firestore initialized (project: syuugyoukisoku)
+============================================================
+HTML FILES: ['admin_companies.html', 'error.html', 'generated_regulation.html', 'history.html', 'index.html', 'modifications.html', 'regulation_confirm.html', 'regulation_history.html', 'regulation_history_new.html', 'regulation_history_old.html', 'regulation_view.html', 'regulations_list.html', 'upload.html']
+EXISTS: True
+TEMPLATE DIR: /app/templates
+============================================================
+[INFO] Using Firestore as database backend
+[2025-11-10 01:13:07 +0000] [2] [INFO] Worker exiting (pid: 2)
+[2025-11-10 01:13:07 +0000] [1] [INFO] Handling signal: term
+
+
+
+
+
+
+
+[2025-11-10 00:46:53 +0000] [2] [INFO] Booting worker with pid: 2
+Default STARTUP TCP probe succeeded after 1 attempt for container "syuugyoukisoku-1" on port 8080.
+[2025-11-10 00:46:53 +0000] [1] [INFO] Using worker: gthread
+[2025-11-10 00:46:53 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+[2025-11-10 00:46:53 +0000] [1] [INFO] Starting gunicorn 21.2.0
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+
