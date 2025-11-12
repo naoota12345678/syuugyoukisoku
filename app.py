@@ -721,22 +721,11 @@ def fix_structure(regulation_id):
         db.save_regulation_content(
             company_id=company_id,
             regulation_id=regulation_id,
+            content_dict=None,  # 構造解析は後で
+            version=new_version,
             raw_text=fixed_text,
-            structured_content=None,  # 構造解析は後で
             tables=content_data.get('tables', [])
         )
-
-        db.create_version(
-            company_id=company_id,
-            regulation_id=regulation_id,
-            version_number=new_version,
-            raw_text=fixed_text,
-            structured_content=None,
-            note="AI構造修正: 章・条・項番号を整理"
-        )
-
-        # 現在のバージョン番号を更新
-        db.update_regulation_version(regulation_id, new_version)
 
         return jsonify({
             "success": True,
