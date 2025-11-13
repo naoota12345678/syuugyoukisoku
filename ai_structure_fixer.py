@@ -35,7 +35,8 @@ class AIStructureFixer:
 
             self.client = Anthropic(
                 api_key=self.api_key,
-                http_client=http_client
+                http_client=http_client,
+                timeout=180.0  # Anthropic SDKのタイムアウトも設定
             )
         except Exception as e:
             raise Exception(f"Failed to initialize Anthropic client: {e}")
