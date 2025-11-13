@@ -7,7 +7,7 @@ class ClaudeValidator:
     """Claude APIを使用して就業規則を検証・生成するクラス"""
 
     def __init__(self, api_key=None):
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        self.api_key = (api_key or os.environ.get("ANTHROPIC_API_KEY", "")).strip()
         if not self.api_key:
             raise ValueError("ANTHROPIC_API_KEY が設定されていません")
 
