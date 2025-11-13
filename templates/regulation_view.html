@@ -92,7 +92,7 @@
         <a href="/regulation/{{ regulation.id }}/history" class="btn btn-secondary">📜 バージョン履歴</a>
 
         <!-- AI機能ボタン -->
-        <button onclick="fixStructure()" class="btn" style="background: #9b59b6; color: white;">🔧 AI構造修正</button>
+        <a href="/structure_fixes/{{ regulation.id }}" class="btn" style="background: #9b59b6; color: white;">🔧 AI構造修正</a>
         <a href="/validate/{{ regulation.id }}" class="btn" style="background: #e67e22; color: white;">🤖 AI内容診断</a>
 
         <button onclick="window.print()" class="btn btn-primary">🖨 印刷</button>
@@ -226,32 +226,6 @@
     </div>
 
     <script>
-        async function fixStructure() {
-            if (!confirm('AI構造修正を実行します。\n\n章・条・項番号の順序を整理し、ページ番号の混入を除去します。\n文章内容は変更されません。\n\nよろしいですか？')) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/fix_structure/{{ regulation.id }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert('✓ AI構造修正が完了しました！\n\n' + data.message);
-                    location.reload();
-                } else {
-                    alert('エラー: ' + (data.error || '不明なエラーが発生しました'));
-                }
-            } catch (error) {
-                alert('エラー: ' + error.message);
-            }
-        }
-
         function downloadPDF() {
             alert('PDF保存機能は準備中です。\n現在は印刷機能をご利用ください。');
             // TODO: PDF生成APIを呼び出す

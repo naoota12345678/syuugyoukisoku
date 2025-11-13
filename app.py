@@ -687,73 +687,82 @@ def delete_company(company_id):
 
     return jsonify({"success": True})
 
-@app.route('/api/fix_structure/<regulation_id>', methods=['POST'])
-def fix_structure(regulation_id):
-    """AI構造修正を実行（章・条・項番号のみ修正、文章は触らない）"""
+@app.route('/structure_fixes/<regulation_id>')
+def structure_fixes(regulation_id):
+    """AI構造修正の確認画面"""
+    regulation = db.get_regulation_by_id(regulation_id)
+    if not regulation:
+        return "規程が見つかりません", 404
+
+    company_id = regulation['company_id']
+    content_data = db.get_regulation_content(company_id, regulation_id)
+    if not content_data:
+        return "規程内容が見つかりません", 404
+
+    raw_text = content_data.get('raw_text', '')
+    if not raw_text:
+        return "規程のテキストが見つかりません", 404
+
+    # AI構造修正を実行
+    from ai_structure_fixer import AIStructureFixer
+    structure_fixer = AIStructureFixer()
+
+    print(f"[AI構造分析] 開始: regulation_id={regulation_id}, 文字数={len(raw_text)}")
+    result = structure_fixer.analyze_structure(raw_text)
+    print(f"[AI構造分析] 完了: {len(result.get('fixes', []))}件の問題を検出")
+
+    if not result.get('success', False):
+        return f"エラー: {result.get('error', '不明なエラー')}", 500
+
+    # Company情報を取得
+    company = db.get_company_by_id(company_id)
+
+    return render_template('structure_fixes.html',
+                         regulation=regulation,
+                         company=company,
+                         fixes=result.get('fixes', []),
+                         fixed_text=result.get('fixed_text', raw_text),
+                         raw_text=raw_text)
+
+
+@app.route('/api/apply_structure_fixes/<regulation_id>', methods=['POST'])
+def apply_structure_fixes(regulation_id):
+    """選択した構造修正を適用"""
     try:
+        data = request.json
+        fixed_text = data.get('fixed_text', '')
+
+        if not fixed_text:
+            return jsonify({"success": False, "error": "修正後のテキストがありません"}), 400
+
         regulation = db.get_regulation_by_id(regulation_id)
         if not regulation:
             return jsonify({"success": False, "error": "規程が見つかりません"}), 404
 
         company_id = regulation['company_id']
-
-        # 規程内容を取得
         content_data = db.get_regulation_content(company_id, regulation_id)
-        if not content_data:
-            return jsonify({"success": False, "error": "規程内容が見つかりません"}), 404
 
-        raw_text = content_data.get('raw_text', '')
-        if not raw_text:
-            return jsonify({"success": False, "error": "規程のテキストが見つかりません"}), 404
-
-        # AI構造修正を実行
-        from ai_structure_fixer import AIStructureFixer
-        structure_fixer = AIStructureFixer()
-
-        print(f"[AI構造修正] 開始: regulation_id={regulation_id}, 文字数={len(raw_text)}")
-        fixed_text = structure_fixer.fix_structure(raw_text)
-        print(f"[AI構造修正] 完了: 修正後文字数={len(fixed_text)}")
-
-        # 警告を検出して分離
-        warnings = []
-        if "⚠️ 警告:" in fixed_text or "⚠️警告:" in fixed_text:
-            lines = fixed_text.split('\n')
-            warning_start = -1
-            for i, line in enumerate(lines):
-                if "⚠️ 警告:" in line or "⚠️警告:" in line:
-                    warning_start = i
-                    break
-
-            if warning_start >= 0:
-                warnings = [line.strip() for line in lines[warning_start:] if line.strip()]
-                fixed_text = '\n'.join(lines[:warning_start]).strip()
-
-        # 修正後のテキストを新バージョンとして保存
+        # 新バージョンとして保存
         current_version = regulation.get('current_version', 1)
         new_version = current_version + 1
 
         db.save_regulation_content(
             company_id=company_id,
             regulation_id=regulation_id,
-            content_dict=None,  # 構造解析は後で
+            content_dict=None,
             version=new_version,
             raw_text=fixed_text,
             tables=content_data.get('tables', [])
         )
 
-        # メッセージ作成
-        message = f"バージョン{new_version}として保存しました。\n章・条・項番号が整理されました。"
-        if warnings:
-            message += "\n\n" + "\n".join(warnings)
-
         return jsonify({
             "success": True,
-            "message": message,
-            "warnings": warnings
+            "message": f"バージョン{new_version}として保存しました",
+            "new_version": new_version
         })
 
     except Exception as e:
-        print(f"[AI構造修正エラー] {e}")
+        print(f"[構造修正適用エラー] {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
