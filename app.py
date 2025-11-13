@@ -715,7 +715,7 @@ def structure_fixes(regulation_id):
         return f"エラー: {result.get('error', '不明なエラー')}", 500
 
     # Company情報を取得
-    company = db.get_company_by_id(company_id)
+    company = db.get_company(company_id)
 
     return render_template('structure_fixes.html',
                          regulation=regulation,
