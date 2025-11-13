@@ -30,7 +30,8 @@ class AIStructureFixer:
             from anthropic import Anthropic
 
             # proxiesを明示的にNoneにしたカスタムクライアント
-            http_client = httpx.Client(timeout=60.0)
+            # 長いテキストの分析には時間がかかるため、タイムアウトを180秒に設定
+            http_client = httpx.Client(timeout=180.0)
 
             self.client = Anthropic(
                 api_key=self.api_key,
