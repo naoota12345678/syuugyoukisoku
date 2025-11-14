@@ -365,7 +365,8 @@ def regulation_view_version(regulation_id, version):
     content = None
     raw_text = None
     tables = []
-    current_version = version
+    current_version = regulation.get('current_version', 1)
+    viewing_version = version  # 実際に表示しているバージョン
 
     if content_data:
         content_json = content_data['content_json']
@@ -387,6 +388,7 @@ def regulation_view_version(regulation_id, version):
                          raw_text=raw_text,
                          tables=tables,
                          current_version=current_version,
+                         viewing_version=viewing_version,
                          versions=versions)
 
 @app.route('/modifications/<regulation_id>')
