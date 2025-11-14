@@ -773,13 +773,18 @@ def apply_structure_fixes(regulation_id):
         current_version = regulation.get('current_version', 1)
         new_version = current_version + 1
 
+        # 現在表示中のバージョン番号を取得
+        viewing_version = content_data.get('version_number', current_version) if content_data else current_version
+
         db.save_regulation_content(
             company_id=company_id,
             regulation_id=regulation_id,
             content_dict=None,
             version=new_version,
             raw_text=fixed_text,
-            tables=content_data.get('tables', [])
+            tables=content_data.get('tables', []),
+            based_on_version=viewing_version,
+            description="AI構造修正"
         )
 
         # regulation documentのcurrent_versionを更新
@@ -845,13 +850,24 @@ def save_full_text(regulation_id):
         current_version = regulation.get('current_version', 1)
         new_version = current_version + 1
 
+        # 現在表示中のバージョン番号を取得
+        viewing_version = content_data.get('version_number', current_version) if content_data else current_version
+
+        # 説明文を生成
+        if viewing_version != current_version:
+            description = f"バージョン{viewing_version}からの手動修正"
+        else:
+            description = "全文の手動修正"
+
         db.save_regulation_content(
             company_id=company_id,
             regulation_id=regulation_id,
             content_dict=None,
             version=new_version,
             raw_text=full_text,
-            tables=content_data.get('tables', [])
+            tables=content_data.get('tables', []),
+            based_on_version=viewing_version,
+            description=description
         )
 
         # current_versionを更新
@@ -863,7 +879,8 @@ def save_full_text(regulation_id):
         return jsonify({
             "success": True,
             "new_version": new_version,
-            "message": f"バージョン{new_version}として保存しました"
+            "based_on_version": viewing_version,
+            "message": f"バージョン{new_version}として保存しました（{description}）"
         })
 
     except Exception as e:

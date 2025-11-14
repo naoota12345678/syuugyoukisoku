@@ -228,7 +228,7 @@ class FirebaseDatabase:
         print(f"📝 規程情報更新: {regulation_id}")
 
     # ===== 規程内容（バージョン）関連 =====
-    def save_regulation_content(self, company_id, regulation_id, content_dict, version=1, raw_text=None, tables=None):
+    def save_regulation_content(self, company_id, regulation_id, content_dict, version=1, raw_text=None, tables=None, based_on_version=None, description=None):
         """規程内容を保存（バージョンとして）"""
         # versions サブコレクションに追加
         doc_ref = self.db.collection('companies').document(str(company_id))\
@@ -242,6 +242,8 @@ class FirebaseDatabase:
             'tables': json.dumps(tables, ensure_ascii=False) if tables else None,
             'created_by': 'upload',  # 'upload' or 'modifications'
             'source_modification_ids': [],  # このバージョンを作成した修正IDリスト
+            'based_on_version': based_on_version,  # どのバージョンから作成されたか
+            'description': description,  # バージョンの説明文
             'created_at': datetime.utcnow()
         }
         doc_ref.set(data)
