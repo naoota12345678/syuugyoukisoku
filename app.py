@@ -363,6 +363,10 @@ def regulation_view_version(regulation_id, version):
     if content_data:
         print(f"[DEBUG] content_data version_number: {content_data.get('version_number')}")
 
+    # バージョンが見つからない場合はエラー
+    if not content_data:
+        return f"バージョン{version}が見つかりません。このバージョンは存在しないか、削除されています。", 404
+
     # すべてのバージョンを取得
     versions = db.get_all_versions(regulation['company_id'], regulation_id)
 
