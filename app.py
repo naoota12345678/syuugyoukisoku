@@ -687,6 +687,27 @@ def delete_company(company_id):
 
     return jsonify({"success": True})
 
+def apply_fixes_to_text(original_text: str, fixes: list) -> str:
+    """
+    fixesリストを元のテキストに適用する
+
+    Args:
+        original_text: 元のテキスト
+        fixes: 修正リスト [{"before_text": "...", "after_text": "..."}]
+
+    Returns:
+        修正後のテキスト
+    """
+    result_text = original_text
+    for fix in fixes:
+        before = fix.get('before_text', '')
+        after = fix.get('after_text', '')
+        if before and after:
+            # before_textをafter_textに置換
+            result_text = result_text.replace(before, after)
+    return result_text
+
+
 @app.route('/structure_fixes/<regulation_id>')
 def structure_fixes(regulation_id):
     """AI構造修正の確認画面"""
@@ -714,14 +735,18 @@ def structure_fixes(regulation_id):
     if not result.get('success', False):
         return f"エラー: {result.get('error', '不明なエラー')}", 500
 
+    # fixesから修正済みテキストを生成
+    fixes = result.get('fixes', [])
+    fixed_text = apply_fixes_to_text(raw_text, fixes) if fixes else raw_text
+
     # Company情報を取得
     company = db.get_company(company_id)
 
     return render_template('structure_fixes.html',
                          regulation=regulation,
                          company=company,
-                         fixes=result.get('fixes', []),
-                         fixed_text=result.get('fixed_text', raw_text),
+                         fixes=fixes,
+                         fixed_text=fixed_text,
                          raw_text=raw_text)
 
 
@@ -754,6 +779,14 @@ def apply_structure_fixes(regulation_id):
             raw_text=fixed_text,
             tables=content_data.get('tables', [])
         )
+
+        # regulation documentのcurrent_versionを更新
+        db.firestore_db.collection('companies').document(company_id).collection('regulations').document(regulation_id).update({
+            'current_version': new_version,
+            'updated_at': db.firestore.SERVER_TIMESTAMP
+        })
+
+        print(f"[構造修正適用] バージョン{new_version}として保存し、current_versionを更新しました")
 
         return jsonify({
             "success": True,
