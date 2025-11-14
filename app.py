@@ -320,9 +320,11 @@ def regulation_view(regulation_id):
     raw_text = None
     tables = []
     current_version = None
+    viewing_version = None
 
     if content_data:
         current_version = content_data.get('version', 1)
+        viewing_version = content_data.get('version_number', current_version)  # 実際に表示中のバージョン番号
         content_json = content_data['content_json']
 
         # structureの取得
@@ -342,6 +344,7 @@ def regulation_view(regulation_id):
                          raw_text=raw_text,
                          tables=tables,
                          current_version=current_version,
+                         viewing_version=viewing_version,
                          versions=versions)
 
 @app.route('/regulation/<regulation_id>/view/version/<int:version>')
@@ -718,7 +721,14 @@ def structure_fixes(regulation_id):
         return "規程が見つかりません", 404
 
     company_id = regulation['company_id']
-    content_data = db.get_regulation_content(company_id, regulation_id)
+
+    # バージョン指定がある場合はそのバージョンを取得、なければ最新を取得
+    version = request.args.get('version', type=int)
+    if version:
+        content_data = db.get_regulation_content(company_id, regulation_id, version=version)
+    else:
+        content_data = db.get_regulation_content(company_id, regulation_id)
+
     if not content_data:
         return "規程内容が見つかりません", 404
 
@@ -726,11 +736,14 @@ def structure_fixes(regulation_id):
     if not raw_text:
         return "規程のテキストが見つかりません", 404
 
+    # 実際に表示するバージョン番号
+    viewing_version = content_data.get('version_number', regulation.get('current_version', 1))
+
     # AI構造修正を実行
     from ai_structure_fixer import AIStructureFixer
     structure_fixer = AIStructureFixer()
 
-    print(f"[AI構造分析] 開始: regulation_id={regulation_id}, 文字数={len(raw_text)}")
+    print(f"[AI構造分析] 開始: regulation_id={regulation_id}, version={viewing_version}, 文字数={len(raw_text)}")
     result = structure_fixer.analyze_structure(raw_text)
     print(f"[AI構造分析] 完了: {len(result.get('fixes', []))}件の問題を検出")
 
@@ -749,7 +762,8 @@ def structure_fixes(regulation_id):
                          company=company,
                          fixes=fixes,
                          fixed_text=fixed_text,
-                         raw_text=raw_text)
+                         raw_text=raw_text,
+                         viewing_version=viewing_version)
 
 
 @app.route('/api/apply_structure_fixes/<regulation_id>', methods=['POST'])
@@ -758,6 +772,7 @@ def apply_structure_fixes(regulation_id):
     try:
         data = request.json
         fixed_text = data.get('fixed_text', '')
+        viewing_version = data.get('viewing_version')  # フロントエンドから送信されたバージョン
 
         if not fixed_text:
             return jsonify({"success": False, "error": "修正後のテキストがありません"}), 400
@@ -767,14 +782,20 @@ def apply_structure_fixes(regulation_id):
             return jsonify({"success": False, "error": "規程が見つかりません"}), 404
 
         company_id = regulation['company_id']
-        content_data = db.get_regulation_content(company_id, regulation_id)
+
+        # ユーザーが実際に表示していたバージョンのデータを取得
+        if viewing_version:
+            content_data = db.get_regulation_content(company_id, regulation_id, version=viewing_version)
+        else:
+            content_data = db.get_regulation_content(company_id, regulation_id)
 
         # 新バージョンとして保存
         current_version = regulation.get('current_version', 1)
         new_version = current_version + 1
 
-        # 現在表示中のバージョン番号を取得
-        viewing_version = content_data.get('version_number', current_version) if content_data else current_version
+        # viewing_versionが送信されていない場合はcontent_dataから取得
+        if not viewing_version:
+            viewing_version = content_data.get('version_number', current_version) if content_data else current_version
 
         db.save_regulation_content(
             company_id=company_id,
@@ -835,6 +856,7 @@ def save_full_text(regulation_id):
     try:
         data = request.json
         full_text = data.get('full_text', '')
+        viewing_version = data.get('viewing_version')  # フロントエンドから送信されたバージョン
 
         if not full_text:
             return jsonify({"success": False, "error": "テキストが空です"}), 400
@@ -844,14 +866,20 @@ def save_full_text(regulation_id):
             return jsonify({"success": False, "error": "規程が見つかりません"}), 404
 
         company_id = regulation['company_id']
-        content_data = db.get_regulation_content(company_id, regulation_id)
+
+        # ユーザーが実際に表示していたバージョンのデータを取得
+        if viewing_version:
+            content_data = db.get_regulation_content(company_id, regulation_id, version=viewing_version)
+        else:
+            content_data = db.get_regulation_content(company_id, regulation_id)
 
         # 新バージョンとして保存
         current_version = regulation.get('current_version', 1)
         new_version = current_version + 1
 
-        # 現在表示中のバージョン番号を取得
-        viewing_version = content_data.get('version_number', current_version) if content_data else current_version
+        # viewing_versionが送信されていない場合はcontent_dataから取得
+        if not viewing_version:
+            viewing_version = content_data.get('version_number', current_version) if content_data else current_version
 
         # 説明文を生成
         if viewing_version != current_version:

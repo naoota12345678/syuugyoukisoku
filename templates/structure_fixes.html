@@ -112,6 +112,7 @@
     <script>
         const allFixes = {{ fixes|tojson }};
         const rawText = {{ raw_text|tojson }};
+        const viewingVersion = {{ viewing_version|tojson }};
 
         function updateCheckboxStyle(cb) {
             const l = cb.closest('.checkbox-label');
@@ -208,7 +209,8 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        fixed_text: resultText
+                        fixed_text: resultText,
+                        viewing_version: viewingVersion
                     })
                 });
 

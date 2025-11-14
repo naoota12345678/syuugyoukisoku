@@ -290,6 +290,7 @@
 
         //=== 全文編集機能 ===
         const rawText = {{ raw_text|tojson }};
+        const viewingVersion = {{ viewing_version|tojson }};
         let isEditMode = false;
 
         function toggleEditMode() {
@@ -335,7 +336,8 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        full_text: editedText
+                        full_text: editedText,
+                        viewing_version: viewingVersion
                     })
                 });
 
