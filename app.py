@@ -350,6 +350,7 @@ def regulation_view(regulation_id):
 @app.route('/regulation/<regulation_id>/view/version/<int:version>')
 def regulation_view_version(regulation_id, version):
     """特定バージョンの規程を表示"""
+    print(f"[DEBUG] viewing version: {version}")
     regulation = db.get_regulation_by_id(regulation_id)
     if not regulation:
         return "規程が見つかりません", 404
@@ -358,6 +359,9 @@ def regulation_view_version(regulation_id, version):
 
     # 指定されたバージョンを取得
     content_data = db.get_regulation_content(regulation['company_id'], regulation_id, version=version)
+    print(f"[DEBUG] content_data found: {content_data is not None}")
+    if content_data:
+        print(f"[DEBUG] content_data version_number: {content_data.get('version_number')}")
 
     # すべてのバージョンを取得
     versions = db.get_all_versions(regulation['company_id'], regulation_id)
