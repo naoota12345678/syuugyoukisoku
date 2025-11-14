@@ -26,6 +26,8 @@
         .panel-header.before { background: #fff3cd; color: #856404; }
         .panel-header.after { background: #d4edda; color: #155724; }
         .panel-content { padding: 15px; min-height: 100px; background: white; line-height: 1.8; white-space: pre-wrap; }
+        .panel-content.editable { background: #fffef7; border: 2px solid #ffc107; }
+        .panel-content textarea { width: 100%; min-height: 100px; padding: 10px; border: 1px solid #dee2e6; border-radius: 4px; font-family: monospace; font-size: 14px; line-height: 1.8; resize: vertical; }
         .reason-box { background: #f8f9fa; padding: 15px 20px; border-radius: 6px; border-left: 3px solid #6c757d; margin: 0 20px 20px 20px; }
         .bottom-actions { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; bottom: 20px; display: flex; gap: 15px; align-items: center; }
         .btn { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s; text-decoration: none; display: inline-block; }
@@ -74,8 +76,18 @@
                     <div class="panel-content">{{ fix.before_text }}</div>
                 </div>
                 <div class="comparison-panel">
-                    <div class="panel-header after">修正後</div>
-                    <div class="panel-content">{{ fix.after_text }}</div>
+                    <div class="panel-header after">
+                        修正後
+                        <button type="button" class="btn" style="float: right; padding: 4px 12px; font-size: 12px; background: #007bff;" onclick="toggleEdit({{ loop.index0 }})">✏️ 編集</button>
+                    </div>
+                    <div class="panel-content" id="after-view-{{ loop.index0 }}">{{ fix.after_text }}</div>
+                    <div class="panel-content editable" id="after-edit-{{ loop.index0 }}" style="display: none;">
+                        <textarea id="after-textarea-{{ loop.index0 }}" rows="5">{{ fix.after_text }}</textarea>
+                        <div style="margin-top: 10px;">
+                            <button type="button" class="btn btn-primary" style="padding: 6px 16px; font-size: 14px;" onclick="saveEdit({{ loop.index0 }})">保存</button>
+                            <button type="button" class="btn btn-secondary" style="padding: 6px 16px; font-size: 14px;" onclick="cancelEdit({{ loop.index0 }})">キャンセル</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -127,6 +139,42 @@
 
         // Initialize checkbox styles
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => updateCheckboxStyle(cb));
+
+        // 編集モード切り替え
+        function toggleEdit(index) {
+            const viewDiv = document.getElementById(`after-view-${index}`);
+            const editDiv = document.getElementById(`after-edit-${index}`);
+            viewDiv.style.display = 'none';
+            editDiv.style.display = 'block';
+        }
+
+        // 編集保存
+        function saveEdit(index) {
+            const textarea = document.getElementById(`after-textarea-${index}`);
+            const viewDiv = document.getElementById(`after-view-${index}`);
+            const editDiv = document.getElementById(`after-edit-${index}`);
+
+            // allFixesの該当項目を更新
+            allFixes[index].after_text = textarea.value;
+
+            // 表示を更新
+            viewDiv.textContent = textarea.value;
+            viewDiv.style.display = 'block';
+            editDiv.style.display = 'none';
+        }
+
+        // 編集キャンセル
+        function cancelEdit(index) {
+            const viewDiv = document.getElementById(`after-view-${index}`);
+            const editDiv = document.getElementById(`after-edit-${index}`);
+            const textarea = document.getElementById(`after-textarea-${index}`);
+
+            // テキストエリアを元に戻す
+            textarea.value = allFixes[index].after_text;
+
+            viewDiv.style.display = 'block';
+            editDiv.style.display = 'none';
+        }
 
         // Handle form submission
         document.getElementById('fixForm').addEventListener('submit', async (e) => {
