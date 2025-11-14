@@ -824,6 +824,55 @@ def fix_version(regulation_id, version):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route('/api/save_full_text/<regulation_id>', methods=['POST'])
+def save_full_text(regulation_id):
+    """全文を手動編集して新バージョンとして保存"""
+    try:
+        data = request.json
+        full_text = data.get('full_text', '')
+
+        if not full_text:
+            return jsonify({"success": False, "error": "テキストが空です"}), 400
+
+        regulation = db.get_regulation_by_id(regulation_id)
+        if not regulation:
+            return jsonify({"success": False, "error": "規程が見つかりません"}), 404
+
+        company_id = regulation['company_id']
+        content_data = db.get_regulation_content(company_id, regulation_id)
+
+        # 新バージョンとして保存
+        current_version = regulation.get('current_version', 1)
+        new_version = current_version + 1
+
+        db.save_regulation_content(
+            company_id=company_id,
+            regulation_id=regulation_id,
+            content_dict=None,
+            version=new_version,
+            raw_text=full_text,
+            tables=content_data.get('tables', [])
+        )
+
+        # current_versionを更新
+        db.db.collection('companies').document(company_id).collection('regulations').document(regulation_id).update({
+            'current_version': new_version,
+            'updated_at': firestore.SERVER_TIMESTAMP
+        })
+
+        return jsonify({
+            "success": True,
+            "new_version": new_version,
+            "message": f"バージョン{new_version}として保存しました"
+        })
+
+    except Exception as e:
+        print(f"[全文保存エラー] {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 if __name__ == '__main__':
     print("Starting Flask app...")
     print("Routes:")

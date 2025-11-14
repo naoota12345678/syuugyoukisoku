@@ -94,6 +94,7 @@
         <!-- AI機能ボタン -->
         <a href="/structure_fixes/{{ regulation.id }}" class="btn" style="background: #9b59b6; color: white;">🔧 AI構造修正</a>
         <a href="/validate/{{ regulation.id }}" class="btn" style="background: #e67e22; color: white;">🤖 AI内容診断</a>
+        <button onclick="toggleEditMode()" class="btn" style="background: #16a085; color: white;">✏️ 全文を編集</button>
 
         <button onclick="window.print()" class="btn btn-primary">🖨 印刷</button>
         <button onclick="downloadPDF()" class="btn btn-success">📥 PDF保存</button>
@@ -139,7 +140,21 @@
     </div>
     {% endif %}
 
-    <div class="content-box">
+    <!-- 編集モード -->
+    <div id="editMode" class="content-box" style="display: none;">
+        <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+            <h3 style="color: #856404; margin-bottom: 10px;">✏️ 全文を編集中</h3>
+            <p style="color: #856404; font-size: 14px;">テキスト全体を自由に編集できます。保存すると新しいバージョンとして保存されます。</p>
+        </div>
+        <textarea id="fullTextEditor" style="width: 100%; min-height: 600px; padding: 20px; border: 2px solid #3498db; border-radius: 8px; font-family: 'Yu Gothic', 'Meiryo', monospace; font-size: 14px; line-height: 1.8;"></textarea>
+        <div style="display: flex; gap: 15px; margin-top: 20px;">
+            <button onclick="saveFullText()" class="btn btn-success" style="padding: 12px 30px; font-size: 16px;">💾 保存（新バージョンとして）</button>
+            <button onclick="cancelEdit()" class="btn btn-secondary" style="padding: 12px 30px; font-size: 16px;">❌ キャンセル</button>
+        </div>
+    </div>
+
+    <!-- 表示モード -->
+    <div id="viewMode" class="content-box">
         {% if content %}
             {% for chapter in content %}
             <div class="chapter">
@@ -267,6 +282,70 @@
                     location.reload();
                 } else {
                     alert('エラー: ' + (data.error || '不明なエラーが発生しました'));
+                }
+            } catch (error) {
+                alert('エラー: ' + error.message);
+            }
+        }
+
+        //=== 全文編集機能 ===
+        const rawText = {{ raw_text|tojson }};
+        let isEditMode = false;
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const editMode = document.getElementById('editMode');
+            const viewMode = document.getElementById('viewMode');
+
+            if (isEditMode) {
+                // 編集モードに切り替え
+                document.getElementById('fullTextEditor').value = rawText || '';
+                editMode.style.display = 'block';
+                viewMode.style.display = 'none';
+                window.scrollTo(0, 0);
+            } else {
+                // 表示モードに戻る
+                editMode.style.display = 'none';
+                viewMode.style.display = 'block';
+            }
+        }
+
+        function cancelEdit() {
+            if (confirm('編集内容を破棄して表示モードに戻りますか？')) {
+                toggleEditMode();
+            }
+        }
+
+        async function saveFullText() {
+            const editedText = document.getElementById('fullTextEditor').value;
+
+            if (!editedText.trim()) {
+                alert('テキストが空です。');
+                return;
+            }
+
+            if (!confirm('全文を新しいバージョンとして保存しますか？\n\n※ current_versionも自動更新されます。')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/save_full_text/{{ regulation.id }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        full_text: editedText
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✓ 保存しました！\n新しいバージョン: ' + data.new_version);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + (data.error || '不明なエラー'));
                 }
             } catch (error) {
                 alert('エラー: ' + error.message);
