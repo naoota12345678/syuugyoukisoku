@@ -781,9 +781,9 @@ def apply_structure_fixes(regulation_id):
         )
 
         # regulation documentのcurrent_versionを更新
-        db.firestore_db.collection('companies').document(company_id).collection('regulations').document(regulation_id).update({
+        db.db.collection('companies').document(company_id).collection('regulations').document(regulation_id).update({
             'current_version': new_version,
-            'updated_at': db.firestore.SERVER_TIMESTAMP
+            'updated_at': firestore.SERVER_TIMESTAMP
         })
 
         print(f"[構造修正適用] バージョン{new_version}として保存し、current_versionを更新しました")
@@ -812,7 +812,7 @@ def fix_version(regulation_id, version):
         company_id = regulation['company_id']
 
         # current_versionを更新
-        db.firestore_db.collection('companies').document(company_id).collection('regulations').document(regulation_id).update({
+        db.db.collection('companies').document(company_id).collection('regulations').document(regulation_id).update({
             'current_version': version
         })
 
