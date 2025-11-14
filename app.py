@@ -389,6 +389,13 @@ def regulation_view_version(regulation_id, version):
         raw_text = content_data.get('raw_text', '')
         tables = content_data.get('tables', [])
 
+    print(f"[DEBUG] Rendering template with:")
+    print(f"  - viewing_version={viewing_version}")
+    print(f"  - current_version={current_version}")
+    print(f"  - content is None: {content is None}")
+    print(f"  - raw_text length: {len(raw_text) if raw_text else 0}")
+    print(f"  - tables count: {len(tables)}")
+
     return render_template('regulation_view.html',
                          regulation=regulation,
                          company=company,

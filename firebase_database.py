@@ -258,20 +258,29 @@ class FirebaseDatabase:
 
     def get_regulation_content(self, company_id, regulation_id, version=None):
         """規程内容を取得"""
+        print(f"[DEBUG] get_regulation_content: company_id={company_id}, regulation_id={regulation_id}, version={version}")
+
         versions_ref = self.db.collection('companies').document(str(company_id))\
             .collection('regulations').document(str(regulation_id))\
             .collection('versions')
 
         if version:
             # 特定バージョンを取得
+            print(f"[DEBUG] get_regulation_content: Querying for version_number == {version}")
             docs = list(versions_ref.where('version_number', '==', version).limit(1).stream())
+            print(f"[DEBUG] get_regulation_content: Found {len(docs)} documents")
         else:
             # 最新バージョンを取得（アプリ側でソート）
+            print(f"[DEBUG] get_regulation_content: Getting latest version")
             all_docs = list(versions_ref.stream())
             docs = sorted(all_docs, key=lambda d: d.to_dict().get('version_number', 0), reverse=True)[:1]
+            print(f"[DEBUG] get_regulation_content: Latest version docs: {len(docs)}")
 
         if docs:
             data = docs[0].to_dict()
+            actual_version = data.get('version_number', 'UNKNOWN')
+            print(f"[DEBUG] get_regulation_content: Returning data with version_number={actual_version}")
+
             data['id'] = docs[0].id
             # JSON文字列をパース
             if 'content_json' in data and data['content_json']:
@@ -281,6 +290,8 @@ class FirebaseDatabase:
             else:
                 data['tables'] = []
             return data
+
+        print(f"[DEBUG] get_regulation_content: No documents found, returning None")
         return None
 
     def get_latest_version(self, company_id, regulation_id):
