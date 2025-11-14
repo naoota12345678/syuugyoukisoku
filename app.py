@@ -429,6 +429,7 @@ def regulation_history(regulation_id):
     version_details = []
     for ver in versions:
         version_num = ver.get('version_number', ver.get('version', 1))  # version_numberまたはversionをフォールバック
+        print(f"[DEBUG] regulation_history: ver data = {ver.keys()}, version_num = {version_num}")
 
         # このバージョンで適用された修正を簡易的にフィルタリング
         # （厳密な時系列は簡略化）
@@ -440,6 +441,8 @@ def regulation_history(regulation_id):
             'modifications': applied_mods[:5],  # 最大5件
             'is_latest': version_num == versions[0].get('version_number', versions[0].get('version', 1)) if versions else False
         })
+
+    print(f"[DEBUG] regulation_history: version_details = {[(v['version'], v['created_at']) for v in version_details]}")
 
     # 従来の修正履歴も取得（参考用）
     modifications = all_modifications
