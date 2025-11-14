@@ -800,6 +800,28 @@ def apply_structure_fixes(regulation_id):
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
+
+@app.route('/api/fix_version/<regulation_id>/<int:version>')
+def fix_version(regulation_id, version):
+    """一時的なAPI：current_versionを手動で更新"""
+    try:
+        regulation = db.get_regulation_by_id(regulation_id)
+        if not regulation:
+            return jsonify({"success": False, "error": "規程が見つかりません"}), 404
+
+        company_id = regulation['company_id']
+
+        # current_versionを更新
+        db.firestore_db.collection('companies').document(company_id).collection('regulations').document(regulation_id).update({
+            'current_version': version
+        })
+
+        return jsonify({"success": True, "message": f"current_versionを{version}に更新しました"})
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 if __name__ == '__main__':
     print("Starting Flask app...")
     print("Routes:")
