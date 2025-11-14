@@ -20,9 +20,11 @@ USE_FIRESTORE = os.environ.get('USE_FIRESTORE', 'false').lower() == 'true'
 
 if USE_FIREBASE:
     from firebase_database import FirebaseDatabase as Database
+    from firebase_admin import firestore
     print("[INFO] 🔥 Using Firebase Admin SDK as database backend")
 elif USE_FIRESTORE:
     from firestore_database import FirestoreDatabase as Database
+    from firebase_admin import firestore
     print("[INFO] Using Firestore as database backend")
 else:
     from database import Database
