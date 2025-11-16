@@ -4,7 +4,11 @@
 from google.cloud import firestore
 from datetime import datetime
 import json
+import os
 from typing import Dict, List, Optional
+
+# デバッグモードを環境変数で制御
+DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
 
 class FirestoreDatabase:
     """
@@ -173,23 +177,22 @@ class FirestoreDatabase:
         doc_ref.update(updates)
 
     # ===== 規程内容（バージョン）関連 =====
-    def save_regulation_content(self, company_id, regulation_id, content_dict, version=1, raw_text=None, tables=None):
+    def save_regulation_content(self, company_id, regulation_id, content_dict, version=1, raw_text=None, tables=None, based_on_version=None, description=None):
         """規程内容を保存（バージョンとして）"""
         # versions サブコレクションに追加
         doc_ref = self.db.collection('companies').document(str(company_id))\
             .collection('regulations').document(str(regulation_id))\
             .collection('versions').document()
 
-        # version_numberを必ずint型で保存
-        version_int = int(version) if not isinstance(version, int) else version
-
         data = {
-            'version_number': version_int,
+            'version_number': int(version),  # 必ず整数として保存
             'content_json': json.dumps(content_dict, ensure_ascii=False) if content_dict else None,
             'raw_text': raw_text,
             'tables': json.dumps(tables, ensure_ascii=False) if tables else None,
             'created_by': 'upload',  # 'upload' or 'modifications'
             'source_modification_ids': [],  # このバージョンを作成した修正IDリスト
+            'based_on_version': int(based_on_version) if based_on_version else None,
+            'description': description or f"バージョン{version}",
             'created_at': datetime.utcnow()
         }
         doc_ref.set(data)
@@ -197,7 +200,7 @@ class FirestoreDatabase:
         # 規程の current_version を更新
         self.db.collection('companies').document(str(company_id))\
             .collection('regulations').document(str(regulation_id))\
-            .update({'current_version': version_int})
+            .update({'current_version': int(version)})
 
         return doc_ref.id
 
@@ -208,14 +211,22 @@ class FirestoreDatabase:
             .collection('versions')
 
         if version:
-            # 特定バージョンを取得（型変換フォールバック付き）
-            version_int = int(version) if not isinstance(version, int) else version
-            docs = list(versions_ref.where('version_number', '==', version_int).limit(1).stream())
-
-            # int型で見つからない場合、string型でも試す
+            # 特定バージョンを取得
+            # print(f"[DEBUG] get_regulation_content: Looking for version {version}")
+            docs = list(versions_ref.where('version_number', '==', version).limit(1).stream())
+            
+            # デバッグ: 全バージョンを確認
             if not docs:
-                version_str = str(version)
-                docs = list(versions_ref.where('version_number', '==', version_str).limit(1).stream())
+                # print(f"[DEBUG] Version {version} not found. Checking all versions...")
+                all_versions = list(versions_ref.stream())
+                # for v in all_versions:
+                #     v_data = v.to_dict()
+                #     print(f"[DEBUG] Found version: {v_data.get('version_number')} (type: {type(v_data.get('version_number'))})")
+                
+                # 型変換して再検索（int/str問題の可能性）
+                docs = [d for d in all_versions if d.to_dict().get('version_number') == version or str(d.to_dict().get('version_number')) == str(version)]
+                # if docs:
+                #     print(f"[DEBUG] Found version {version} after type conversion")
         else:
             # 最新バージョンを取得（アプリ側でソート）
             all_docs = list(versions_ref.stream())
@@ -231,7 +242,10 @@ class FirestoreDatabase:
                 data['tables'] = json.loads(data['tables'])
             else:
                 data['tables'] = []
+            # print(f"[DEBUG] Returning content for version: {data.get('version_number')}")
             return data
+        
+        # print(f"[DEBUG] No content found for version: {version}")
         return None
 
     def get_latest_version(self, company_id, regulation_id):
