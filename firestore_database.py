@@ -180,8 +180,11 @@ class FirestoreDatabase:
             .collection('regulations').document(str(regulation_id))\
             .collection('versions').document()
 
+        # version_numberを必ずint型で保存
+        version_int = int(version) if not isinstance(version, int) else version
+
         data = {
-            'version_number': version,
+            'version_number': version_int,
             'content_json': json.dumps(content_dict, ensure_ascii=False) if content_dict else None,
             'raw_text': raw_text,
             'tables': json.dumps(tables, ensure_ascii=False) if tables else None,
@@ -194,7 +197,7 @@ class FirestoreDatabase:
         # 規程の current_version を更新
         self.db.collection('companies').document(str(company_id))\
             .collection('regulations').document(str(regulation_id))\
-            .update({'current_version': version})
+            .update({'current_version': version_int})
 
         return doc_ref.id
 
@@ -205,8 +208,14 @@ class FirestoreDatabase:
             .collection('versions')
 
         if version:
-            # 特定バージョンを取得
-            docs = list(versions_ref.where('version_number', '==', version).limit(1).stream())
+            # 特定バージョンを取得（型変換フォールバック付き）
+            version_int = int(version) if not isinstance(version, int) else version
+            docs = list(versions_ref.where('version_number', '==', version_int).limit(1).stream())
+
+            # int型で見つからない場合、string型でも試す
+            if not docs:
+                version_str = str(version)
+                docs = list(versions_ref.where('version_number', '==', version_str).limit(1).stream())
         else:
             # 最新バージョンを取得（アプリ側でソート）
             all_docs = list(versions_ref.stream())
