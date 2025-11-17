@@ -1,0 +1,32 @@
+# regulation_view.htmlのバージョンセレクター部分を以下に修正
+
+{% if versions and versions|length > 1 %}
+<div class="version-selector">
+    <select onchange="if(this.value) window.location.href=this.value">
+        {% for ver in versions %}
+        {% set version_num = ver.get('version', ver.get('version_number', loop.index0)) %}
+        <option value="/regulation/{{ regulation.id }}/view/version/{{ version_num }}" 
+                {% if version_num == current_version_num %}selected{% endif %}>
+            Version {{ version_num }}{% if loop.first %} (最新){% endif %}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}
+
+# または、デバッグのために一時的に以下を使用
+
+{% if versions and versions|length > 1 %}
+<div class="version-selector">
+    <select onchange="if(this.value) window.location.href=this.value">
+        {% for i in range(versions|length) %}
+        {% set ver = versions[i] %}
+        {% set version_num = ver.version_number if ver.version_number is defined else ver['version_number'] if 'version_number' in ver else ver.version if ver.version is defined else ver['version'] if 'version' in ver else (versions|length - i - 1) %}
+        <option value="/regulation/{{ regulation.id }}/view/version/{{ version_num }}" 
+                {% if version_num == current_version_num %}selected{% endif %}>
+            Version {{ version_num }}{% if i == 0 %} (最新){% endif %}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}

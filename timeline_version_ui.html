@@ -1,0 +1,207 @@
+<!-- regulation_view.htmlのアクション部分を以下のタイムライン表示に置き換える -->
+
+<!-- バージョンタイムライン表示 -->
+{% if versions and versions|length > 1 %}
+<div class="version-timeline-container">
+    <div class="version-timeline-header">
+        <strong>📋 バージョン履歴</strong>
+        <span style="margin-left: 10px; color: #6c757d;">
+            全{{ versions|length }}バージョン
+        </span>
+    </div>
+    
+    <div class="version-timeline">
+        <div class="version-timeline-wrapper">
+            {% for ver in versions|reverse %}
+            {% set version_num = ver.version_number if ver.version_number is defined else ver['version_number'] if 'version_number' in ver else ver.version if ver.version is defined else ver['version'] %}
+            {% set is_active = version_num == current_version_num %}
+            {% set is_latest = loop.last %}
+            {% set is_branch = ver.is_branch if ver.is_branch is defined else ver.get('is_branch', false) %}
+            
+            <a href="/regulation/{{ regulation.id }}/view/version/{{ version_num }}" 
+               class="version-node {% if is_active %}active{% endif %} {% if is_latest %}latest{% endif %} {% if is_branch %}branch{% endif %}"
+               style="text-decoration: none;">
+                
+                <span class="version-label">v{{ version_num }}</span>
+                
+                <div class="version-dot"></div>
+                
+                <span class="version-date">
+                    {% if ver.created_at %}
+                        {% if ver.created_at is string %}
+                            {{ ver.created_at[:10] }}
+                        {% else %}
+                            {{ ver.created_at.strftime('%Y-%m-%d') if ver.created_at else '' }}
+                        {% endif %}
+                    {% endif %}
+                </span>
+                
+                <div class="version-info-tooltip">
+                    <div><strong>Version {{ version_num }}</strong></div>
+                    {% if ver.description %}
+                    <div>{{ ver.description }}</div>
+                    {% endif %}
+                    {% if ver.based_on_version %}
+                    <div>ベース: v{{ ver.based_on_version }}</div>
+                    {% endif %}
+                    {% if is_latest %}
+                    <div style="color: #4caf50;">最新版</div>
+                    {% endif %}
+                </div>
+            </a>
+            
+            {% if not loop.last %}
+            <div class="version-line"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- スタイルをヘッダーに追加 -->
+<style>
+/* タイムライン式バージョン表示 */
+.version-timeline-container {
+    background: white;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.version-timeline-header {
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.version-timeline {
+    display: flex;
+    align-items: center;
+    padding: 30px 20px;
+    overflow-x: auto;
+    position: relative;
+}
+
+.version-timeline-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+    min-width: fit-content;
+}
+
+.version-node {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.version-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #dee2e6;
+    border: 3px solid white;
+    box-shadow: 0 0 0 1px #dee2e6;
+    transition: all 0.3s;
+}
+
+.version-node.active .version-dot {
+    width: 24px;
+    height: 24px;
+    background: #3498db;
+    box-shadow: 0 0 0 2px #3498db, 0 0 0 4px rgba(52, 152, 219, 0.2);
+}
+
+.version-node.latest .version-dot {
+    background: #28a745;
+    box-shadow: 0 0 0 1px #28a745;
+}
+
+.version-node.branch .version-dot {
+    background: #ffc107;
+    box-shadow: 0 0 0 1px #ffc107;
+}
+
+.version-node:hover .version-dot {
+    transform: scale(1.2);
+}
+
+.version-label {
+    position: absolute;
+    top: -25px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #495057;
+}
+
+.version-node.active .version-label {
+    color: #3498db;
+    font-size: 14px;
+}
+
+.version-date {
+    position: absolute;
+    bottom: -22px;
+    font-size: 11px;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.version-line {
+    height: 2px;
+    width: 60px;
+    background: #dee2e6;
+}
+
+.version-info-tooltip {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    z-index: 10;
+    line-height: 1.5;
+}
+
+.version-info-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #2c3e50;
+}
+
+.version-node:hover .version-info-tooltip {
+    opacity: 1;
+    visibility: visible;
+    bottom: 45px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .version-timeline {
+        padding: 25px 10px;
+    }
+    
+    .version-line {
+        width: 40px;
+    }
+}
+</style>

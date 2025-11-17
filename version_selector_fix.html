@@ -1,0 +1,21 @@
+<!-- regulation_view.htmlのバージョンセレクター部分の修正 -->
+
+<!-- 既存の部分を以下に置き換え -->
+{% if versions and versions|length > 1 %}
+<div class="version-selector">
+    <select onchange="if(this.value) window.location.href=this.value">
+        {% for ver in versions %}
+        <option value="/regulation/{{ regulation.id }}/view/version/{{ ver.version or ver['version'] }}" 
+                {% if (ver.version or ver['version']) == current_version_num %}selected{% endif %}>
+            Version {{ ver.version or ver['version'] }}{% if loop.first %} (最新){% endif %}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}
+
+<!-- デバッグ用（本番では削除） -->
+<script>
+console.log('Versions data:', {{ versions|tojson }});
+console.log('Current version num:', {{ current_version_num }});
+</script>

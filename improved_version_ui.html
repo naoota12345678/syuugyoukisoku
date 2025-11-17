@@ -1,0 +1,207 @@
+<!-- 改善されたバージョン管理UI -->
+
+<style>
+/* バージョンセレクターの改善 */
+.version-control-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto;
+}
+
+.version-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8f9fa;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.version-display .current {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.version-selector-improved {
+    position: relative;
+}
+
+.version-selector-improved select {
+    padding: 8px 35px 8px 12px;
+    border: 2px solid #3498db;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    background: white;
+    cursor: pointer;
+    appearance: none;
+    min-width: 120px;
+}
+
+.version-selector-improved::after {
+    content: '▼';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #3498db;
+    font-size: 12px;
+}
+
+/* バージョン情報バー */
+.version-info-bar {
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3498db;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.version-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.version-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.version-info-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.version-info-value {
+    font-size: 16px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* タイムライン式バージョン表示 */
+.version-timeline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    overflow-x: auto;
+}
+
+.version-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #dee2e6;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.version-dot.active {
+    width: 16px;
+    height: 16px;
+    background: #3498db;
+}
+
+.version-dot.latest {
+    background: #28a745;
+}
+
+.version-dot:hover {
+    transform: scale(1.2);
+}
+
+.version-dot:hover::after {
+    content: attr(data-version);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    margin-bottom: 4px;
+}
+
+.version-line {
+    height: 2px;
+    background: #dee2e6;
+    flex: 1;
+}
+</style>
+
+<!-- HTMLの実装 -->
+
+<!-- オプション1: コンパクトなセレクター -->
+<div class="version-control-wrapper">
+    <div class="version-display">
+        <span class="current">Version {{ current_version_num }}</span>
+        {% if versions|length > 1 %}
+        <span style="color: #6c757d;">・</span>
+        <div class="version-selector-improved">
+            <select onchange="if(this.value) window.location.href=this.value">
+                <option value="">他のバージョン</option>
+                {% for ver in versions %}
+                {% if ver.version != current_version_num %}
+                <option value="/regulation/{{ regulation.id }}/view/version/{{ ver.version }}">
+                    v{{ ver.version }}{% if loop.first and ver.version != current_version_num %} (最新){% endif %}
+                </option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- オプション2: 詳細情報バー -->
+<div class="version-info-bar">
+    <div class="version-info-grid">
+        <div class="version-info-item">
+            <span class="version-info-label">現在のバージョン</span>
+            <span class="version-info-value">Version {{ current_version_num }}</span>
+        </div>
+        {% if version_data and version_data.based_on_version %}
+        <div class="version-info-item">
+            <span class="version-info-label">ベースバージョン</span>
+            <span class="version-info-value">Version {{ version_data.based_on_version }}</span>
+        </div>
+        {% endif %}
+        <div class="version-info-item">
+            <span class="version-info-label">作成日時</span>
+            <span class="version-info-value">{{ version_data.created_at|default('N/A') }}</span>
+        </div>
+        {% if version_data and version_data.description %}
+        <div class="version-info-item">
+            <span class="version-info-label">説明</span>
+            <span class="version-info-value">{{ version_data.description }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- オプション3: タイムライン式（バージョンが多い場合） -->
+<div class="version-timeline">
+    {% for ver in versions|reverse %}
+    <a href="/regulation/{{ regulation.id }}/view/version/{{ ver.version }}" 
+       class="version-dot {% if ver.version == current_version_num %}active{% endif %} {% if loop.last %}latest{% endif %}"
+       data-version="v{{ ver.version }}"
+       title="Version {{ ver.version }} - {{ ver.created_at[:10] }}">
+    </a>
+    {% if not loop.last %}
+    <div class="version-line"></div>
+    {% endif %}
+    {% endfor %}
+</div>
