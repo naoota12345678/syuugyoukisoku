@@ -90,6 +90,12 @@ gcloud run services describe syuugyoukisoku --region=asia-northeast1 --format="t
 bash ensure_latest_traffic.sh
 ```
 
+Windows版:
+```cmd
+# simple_traffic.batを実行
+simple_traffic.bat
+```
+
 ---
 
 ## ❌ 絶対にやってはいけないこと
@@ -108,18 +114,87 @@ LATEST_REV=$(...)
 gcloud run services update-traffic ... --to-revisions=$LATEST_REV=100
 ```
 
-### 2. `--to-latest`を使う
+### 2. `--to-latest`を状況によっては使わない
 ```bash
-# ❌ 危険：バックグラウンドビルドに上書きされるリスク
+# ⚠️ 注意：タイミングによってはバックグラウンドビルドに上書きされるリスク
 gcloud run services update-traffic syuugyoukisoku --region=asia-northeast1 --to-latest
 
-# ✅ 安全：具体的なリビジョンを指定
+# ✅ より安全：具体的なリビジョンを指定
 gcloud run services update-traffic syuugyoukisoku --region=asia-northeast1 --to-revisions=syuugyoukisoku-00029-7n9=100
 ```
 
 ### 3. 自動デプロイ時のトラフィック切り替えを期待する
 Cloud Buildの自動デプロイは**新しいリビジョンを作成するだけ**で、トラフィックは切り替えません。
 **必ず手動でトラフィックを切り替える必要があります。**
+
+---
+
+## ⚡ 環境変数・データベース接続の問題（2025年11月17日追加）
+
+### 問題の症状
+- Firestoreにデータがあるのに表示されない
+- SQLiteモードで動作してしまう
+- 環境変数を設定してもFirestoreに接続しない
+
+### 原因
+1. **リージョン移行時に環境変数がリセットされる**
+   - `us-central1` → `asia-northeast1`への変更時など
+2. **環境変数の文字列評価の問題**
+   - `USE_FIRESTORE=true`が正しく認識されない場合がある
+3. **URLが変わる問題**
+   - リージョン変更やサービス更新でURLが変わることがある
+
+### 解決方法
+
+#### 1. 環境変数の確認と再設定
+```bash
+# 現在の環境変数を確認
+gcloud run services describe syuugyoukisoku --region=asia-northeast1 --format="get(spec.template.spec.containers[0].env[].name)"
+
+# 環境変数を設定
+gcloud run services update syuugyoukisoku --region=asia-northeast1 --set-env-vars USE_FIRESTORE=True,GOOGLE_CLOUD_PROJECT=syuugyoukisoku
+
+# トラフィックを最新リビジョンに切り替え（重要！）
+gcloud run services update-traffic syuugyoukisoku --region=asia-northeast1 --to-latest
+```
+
+#### 2. cloudbuild.yamlに環境変数を永続化
+```yaml
+# Cloud Runデプロイステップに追加
+- '--set-env-vars'
+- 'USE_FIRESTORE=true,GOOGLE_CLOUD_PROJECT=syuugyoukisoku'
+```
+
+#### 3. コードで強制的にFirestoreを使用（一時的な対処）
+```python
+# app.py
+USE_FIRESTORE = True  # 強制的にTrue
+```
+
+### URLの固定化
+```bash
+# カスタムドメインの設定（推奨）
+gcloud run domain-mappings create --service=syuugyoukisoku --domain=yourdomain.com --region=asia-northeast1
+```
+
+### デバッグ方法
+```bash
+# ログでデータベース接続を確認
+gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=syuugyoukisoku AND (textPayload:\"Database\" OR textPayload:\"Firestore\")" --limit=10 --format=text
+```
+
+---
+
+## 📋 よくある問題と対処法
+
+### Q: デプロイしたのにデータが表示されない
+A: 環境変数が設定されているか確認し、トラフィックが最新リビジョンに向いているか確認
+
+### Q: URLが変わってしまった
+A: リージョン変更や環境変数更新で発生。カスタムドメインの設定で解決
+
+### Q: SQLiteモードになってしまう
+A: `USE_FIRESTORE`環境変数が正しく設定されているか確認
 
 ---
 
@@ -210,8 +285,9 @@ echo "URL: https://syuugyoukisoku-bsdy2np4aa-an.a.run.app"
 ## 🎯 重要ポイントまとめ
 
 1. **ビルドが完了するまで待つ** - STATUS=SUCCESSを確認
-2. **具体的なリビジョン名を指定** - `--to-latest`は使わない
-3. **必ず手動でトラフィックを切り替える** - 自動では切り替わらない
+2. **必ず手動でトラフィックを切り替える** - 自動では切り替わらない
+3. **環境変数の設定後もトラフィック切り替えが必要**
 4. **トラフィック設定を確認** - デプロイ後に必ず確認
+5. **Firestore接続の問題は環境変数で解決**
 
-このルールを守れば、「コードは変更したのに反映されない」問題は発生しません。
+このルールを守れば、今回のような問題は発生しません。

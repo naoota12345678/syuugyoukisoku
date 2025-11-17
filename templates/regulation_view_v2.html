@@ -1,0 +1,319 @@
+<!-- 改善されたバージョン管理UI（regulation_view_v2.html） -->
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ regulation.name }} - バージョン管理システム</title>
+    <style>
+        /* モダンなバージョン管理UI */
+        .version-control {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            width: 350px;
+            z-index: 1000;
+        }
+        
+        .version-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .version-selector select {
+            padding: 10px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            font-size: 16px;
+            flex: 1;
+        }
+        
+        .version-tree {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .version-node {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .version-node:hover {
+            background: #e3e8ee;
+            transform: translateX(5px);
+        }
+        
+        .version-node.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .version-branch {
+            border-left: 3px solid #e74c3c;
+            margin-left: 20px;
+        }
+        
+        .version-info {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 4px;
+        }
+        
+        /* 差分表示 */
+        .diff-viewer {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: none;
+        }
+        
+        .diff-header {
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .diff-content {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .diff-line {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 2px 10px;
+        }
+        
+        .diff-add {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .diff-remove {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .diff-context {
+            background: #f8f9fa;
+            color: #495057;
+        }
+        
+        /* バージョン比較ボタン */
+        .compare-button {
+            background: #9b59b6;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .compare-button:hover {
+            background: #8e44ad;
+        }
+    </style>
+</head>
+<body>
+    <!-- バージョン管理パネル -->
+    <div class="version-control">
+        <h3>📊 バージョン管理</h3>
+        
+        <div class="version-selector">
+            <label>表示中:</label>
+            <select id="versionSelect" onchange="changeVersion(this.value)">
+                {% for v in versions %}
+                <option value="{{ v.version_number }}" 
+                        {% if v.version_number == viewing_version %}selected{% endif %}>
+                    v{{ v.version_number }} - {{ v.description|default('更新', true) }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="version-info">
+            <div><strong>作成日:</strong> <span id="versionDate">{{ current_version_data.created_at }}</span></div>
+            <div><strong>ベース:</strong> v<span id="basedOn">{{ current_version_data.based_on_version|default('なし', true) }}</span></div>
+            {% if current_version_data.is_branch %}
+            <div style="color: #e74c3c;">⚠️ ブランチバージョン</div>
+            {% endif %}
+        </div>
+        
+        <button class="compare-button" onclick="showDiffModal()">
+            🔍 他のバージョンと比較
+        </button>
+        
+        <!-- バージョンツリー -->
+        <div class="version-tree">
+            <h4>バージョン履歴</h4>
+            <div id="versionTree"></div>
+        </div>
+    </div>
+    
+    <!-- 差分表示モーダル -->
+    <div class="diff-viewer" id="diffModal">
+        <div class="diff-header">
+            <h3>バージョン比較</h3>
+            <button onclick="closeDiffModal()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
+        </div>
+        <div class="diff-content" id="diffContent">
+            <!-- 差分がここに表示される -->
+        </div>
+    </div>
+    
+    <!-- メインコンテンツ（既存） -->
+    <div class="content-box">
+        <!-- 既存のコンテンツ -->
+    </div>
+    
+    <script>
+        // 現在表示中のバージョンを追跡
+        let currentViewingVersion = {{ viewing_version }};
+        const regulationId = '{{ regulation.id }}';
+        const companyId = '{{ company.id }}';
+        
+        // バージョン変更
+        function changeVersion(version) {
+            window.location.href = `/regulation/${regulationId}/view/version/${version}`;
+        }
+        
+        // 差分表示
+        async function showDiffModal() {
+            const compareVersion = prompt('比較するバージョン番号を入力してください:');
+            if (!compareVersion) return;
+            
+            try {
+                const response = await fetch(`/api/compare_versions/${regulationId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        version1: currentViewingVersion,
+                        version2: parseInt(compareVersion)
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    displayDiff(data.diff);
+                    document.getElementById('diffModal').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('比較中にエラーが発生しました');
+            }
+        }
+        
+        function displayDiff(diffData) {
+            const content = document.getElementById('diffContent');
+            content.innerHTML = '';
+            
+            // 差分統計
+            const stats = document.createElement('div');
+            stats.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <span style="color: #28a745;">+${diffData.added_lines} 追加</span> / 
+                    <span style="color: #dc3545;">-${diffData.deleted_lines} 削除</span>
+                </div>
+            `;
+            content.appendChild(stats);
+            
+            // 差分表示
+            diffData.diff.forEach(line => {
+                const div = document.createElement('div');
+                div.className = 'diff-line';
+                
+                if (line.startsWith('+')) {
+                    div.className += ' diff-add';
+                } else if (line.startsWith('-')) {
+                    div.className += ' diff-remove';
+                } else {
+                    div.className += ' diff-context';
+                }
+                
+                div.textContent = line;
+                content.appendChild(div);
+            });
+        }
+        
+        function closeDiffModal() {
+            document.getElementById('diffModal').style.display = 'none';
+        }
+        
+        // バージョンツリーの描画
+        function renderVersionTree(versions) {
+            const tree = document.getElementById('versionTree');
+            tree.innerHTML = '';
+            
+            versions.forEach(v => {
+                const node = document.createElement('div');
+                node.className = 'version-node';
+                if (v.version_number === currentViewingVersion) {
+                    node.className += ' active';
+                }
+                if (v.is_branch) {
+                    node.className += ' version-branch';
+                }
+                
+                node.innerHTML = `
+                    <div>v${v.version_number} - ${v.description || '更新'}</div>
+                    <div class="version-info">${new Date(v.created_at).toLocaleDateString()}</div>
+                `;
+                
+                node.onclick = () => changeVersion(v.version_number);
+                tree.appendChild(node);
+            });
+        }
+        
+        // 修正適用時に現在のバージョンを送信
+        function applyModification(modificationId) {
+            fetch(`/api/save_modification/${modificationId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    viewing_version: currentViewingVersion
+                })
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      alert(`バージョン${data.new_version}として保存しました（v${data.based_on_version}ベース）`);
+                      window.location.reload();
+                  }
+              });
+        }
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // バージョンツリーを描画
+            const versions = {{ versions|tojson }};
+            renderVersionTree(versions);
+        });
+    </script>
+</body>
+</html>

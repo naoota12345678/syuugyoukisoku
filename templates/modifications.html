@@ -331,5 +331,73 @@
             }
         }
     </script>
+
+    <!-- バージョン管理改善 (追加: 2025-11-17) -->
+    <script>
+    // 現在表示中のバージョン番号を追跡
+    // URLパラメータから取得するか、regulation_viewから渡す
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewingVersion = urlParams.get('version') || {{ regulation.current_version | default(1) }};
+
+    // 修正を適用する関数を更新
+    function applyModification(modificationId, button) {
+        if (!confirm('この修正を適用して新しいバージョンを作成しますか？')) return;
+        
+        button.disabled = true;
+        button.textContent = '適用中...';
+        
+        // viewing_versionを含めて送信（重要！）
+        fetch(`/api/save_modification/${modificationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                viewing_version: viewingVersion  // 現在表示中のバージョンを送信
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 成功メッセージを詳細に
+                alert(`成功！\n\n${data.message}\n\nベースバージョン: v${data.based_on_version}\n説明: ${data.description}`);
+                
+                // 新しいバージョンにリダイレクト
+                setTimeout(() => {
+                    window.location.href = `/regulation/${regulationId}/view/version/${data.new_version}`;
+                }, 1000);
+            } else {
+                alert('エラー: ' + data.error);
+                button.disabled = false;
+                button.textContent = '適用';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('エラーが発生しました');
+            button.disabled = false;
+            button.textContent = '適用';
+        });
+    }
+
+    // 修正提案画面を開く際にバージョン情報を表示
+    document.addEventListener('DOMContentLoaded', function() {
+        // バージョン情報を表示
+        const versionInfo = document.createElement('div');
+        versionInfo.style.cssText = 'background: #e3f2fd; padding: 10px; margin-bottom: 20px; border-radius: 4px;';
+        versionInfo.innerHTML = `
+            <strong>📌 現在のベースバージョン: v${viewingVersion}</strong><br>
+            <small>このバージョンから修正を適用すると、新しいバージョンが作成されます。</small>
+        `;
+        
+        const container = document.querySelector('.container');
+        if (container && container.firstChild) {
+            container.insertBefore(versionInfo, container.firstChild.nextSibling);
+        }
+    });
+
+    // デバッグ情報をコンソールに出力
+    console.log('Viewing Version:', viewingVersion);
+    </script>
 </body>
 </html>
