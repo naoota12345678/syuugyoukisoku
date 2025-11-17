@@ -47,13 +47,30 @@
 
     <div class="regulations-grid">
         {% if regulations %}
+            <!-- 規程名でグループ化して最新版のみ表示 -->
+            {% set displayed_regulations = {} %}
+            
+            <!-- まず最新版を特定 -->
             {% for reg in regulations %}
+                {% set reg_name = reg.name %}
+                {% if reg_name not in displayed_regulations %}
+                    {% set _ = displayed_regulations.update({reg_name: reg}) %}
+                {% else %}
+                    <!-- より新しいバージョンがあれば更新 -->
+                    {% if (reg.current_version|default(1)|int) > (displayed_regulations[reg_name].current_version|default(1)|int) %}
+                        {% set _ = displayed_regulations.update({reg_name: reg}) %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            
+            <!-- 最新版のみを表示 -->
+            {% for reg_name, reg in displayed_regulations.items() %}
             <div class="regulation">
                 <h3>{{ reg.name }}</h3>
 
                 <div class="regulation-meta">
                     <div class="meta-label">タイプ:</div>
-                    <div class="meta-value">{{ reg.type }}</div>
+                    <div class="meta-value">{{ reg.type|default('就業規則') }}</div>
 
                     <div class="meta-label">ステータス:</div>
                     <div class="meta-value">
@@ -75,17 +92,13 @@
                     <div class="meta-value">{{ reg.effective_date }}</div>
                     {% endif %}
 
-                    {% if reg.latest_version %}
                     <div class="meta-label">最新バージョン:</div>
                     <div class="meta-value">
-                        <strong style="color: #3498db;">v{{ reg.latest_version }}</strong>
-                        {% if reg.last_version_date %}
+                        <strong style="color: #3498db;">Version {{ reg.current_version|default(1) }}</strong>
                         <span style="color: #999; font-size: 12px; margin-left: 8px;">
-                            ({{ reg.last_version_date[:10] }})
+                            ({{ reg.updated_at[:10] if reg.updated_at else reg.created_at[:10] }})
                         </span>
-                        {% endif %}
                     </div>
-                    {% endif %}
 
                     <div class="meta-label">作成日:</div>
                     <div class="meta-value">{{ reg.created_at[:10] }}</div>
@@ -98,9 +111,9 @@
                     <a href="/regulation/{{ reg.id }}/view" class="btn btn-primary">📄 規程内容を見る</a>
                     <a href="/regulation/{{ reg.id }}/history" class="btn btn-secondary">
                         📜 バージョン履歴
-                        {% if reg.latest_version %}
+                        {% if reg.current_version %}
                         <span style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 10px; margin-left: 6px; font-size: 11px;">
-                            {{ reg.latest_version }}版
+                            {{ reg.current_version }}版
                         </span>
                         {% endif %}
                     </a>
