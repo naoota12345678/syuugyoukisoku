@@ -14,6 +14,65 @@
         .status-badge.active { background: #d4edda; color: #155724; }
         .status-badge.draft { background: #fff3cd; color: #856404; }
         .status-badge.submitted { background: #cce5ff; color: #004085; }
+        
+        .version-selector {
+            position: relative;
+            display: inline-block;
+            margin-left: auto;
+        }
+        .version-selector select {
+            padding: 10px 40px 10px 15px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            min-width: 150px;
+        }
+        .version-selector::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #3498db;
+        }
+        .version-selector select:hover {
+            background: #f8f9fa;
+            border-color: #2980b9;
+        }
+        .version-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .version-badge.latest {
+            background: #d4edda;
+            color: #155724;
+        }
+        .version-info-bar {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            margin: -30px -30px 20px -30px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .version-info-bar strong {
+            color: #495057;
+        }
 
         .actions { background: white; padding: 15px 30px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; }
         .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; text-decoration: none; display: inline-block; transition: all 0.2s; }
@@ -52,18 +111,23 @@
 </head>
 <body>
     <div class="header">
-        <h1>📄 {{ regulation.name }}
-            {% if version_data %}
-            <span style="font-size: 18px; color: #3498db; font-weight: normal; margin-left: 15px;">
-                (Version {{ version_data.version_number }}{% if versions and versions[0]['version'] == version_data.version_number %} - 最新{% endif %})
+        <h1>📄 {{ regulation.name }}</h1>
+        <div style="color: #34495e; font-size: 16px; margin-top: 10px;">{{ company.name }}</div>
+        
+        {% set current_version_num = version_data.version_number if version_data else viewing_version %}
+        {% if current_version_num %}
+        <div style="margin-top: 15px;">
+            <span class="version-badge{% if versions and versions[0]['version'] == current_version_num %} latest{% endif %}">
+                Version {{ current_version_num }}{% if versions and versions[0]['version'] == current_version_num %} - 最新{% endif %}
             </span>
-            {% elif viewing_version %}
-            <span style="font-size: 18px; color: #3498db; font-weight: normal; margin-left: 15px;">
-                (Version {{ viewing_version }}{% if versions and versions[0]['version'] == viewing_version %} - 最新{% endif %})
+            {% if version_data and version_data.based_on_version %}
+            <span style="font-size: 13px; color: #6c757d; margin-left: 10px;">
+                (Version {{ version_data.based_on_version }} から派生)
             </span>
             {% endif %}
-        </h1>
-        <div style="color: #34495e; font-size: 16px; margin-top: 10px;">{{ company.name }}</div>
+        </div>
+        {% endif %}
+        
         <div class="meta">
             <div class="meta-item">
                 <strong>ステータス:</strong>
@@ -96,8 +160,9 @@
         <a href="/regulation/{{ regulation.id }}/history" class="btn btn-secondary">📜 バージョン履歴</a>
 
         <!-- AI機能ボタン -->
-        <a href="/structure_fixes/{{ regulation.id }}" class="btn" style="background: #9b59b6; color: white;">🔧 AI構造修正</a>
-        <a href="/validate/{{ regulation.id }}" class="btn" style="background: #e67e22; color: white;">🤖 AI内容診断</a>
+        <a href="/structure_fixes/{{ regulation.id }}?version={{ current_version_num }}" class="btn" style="background: #9b59b6; color: white;">🔧 AI構造修正</a>
+        <a href="/validate/{{ regulation.id }}?version={{ current_version_num }}" class="btn" style="background: #e67e22; color: white;">🤖 AI内容診断</a>
+        <a href="/modifications/{{ regulation.id }}?version={{ current_version_num }}" class="btn btn-primary">📝 修正提案を見る</a>
         <button onclick="toggleEditMode()" class="btn" style="background: #16a085; color: white;">✏️ 全文を編集</button>
 
         <button onclick="window.print()" class="btn btn-primary">🖨 印刷</button>
@@ -105,12 +170,12 @@
         <button onclick="openDateModal()" class="btn btn-submit">📅 提出日・施行日を設定</button>
 
         {% if versions and versions|length > 1 %}
-        <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
-            <span style="color: #666; font-size: 14px;">バージョン履歴:</span>
-            <select onchange="if(this.value) window.location.href=this.value" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+        <div class="version-selector">
+            <select onchange="if(this.value) window.location.href=this.value">
                 {% for ver in versions %}
-                <option value="/regulation/{{ regulation.id }}/view/version/{{ ver['version'] }}" {% if ver['version'] == (version_data.version_number if version_data else viewing_version) %}selected{% endif %}>
-                    v{{ ver['version'] }}{% if loop.first %} (最新){% endif %} - {{ ver['created_at'][:10] }}
+                <option value="/regulation/{{ regulation.id }}/view/version/{{ ver['version'] }}" 
+                        {% if ver['version'] == current_version_num %}selected{% endif %}>
+                    Version {{ ver['version'] }}{% if loop.first %} (最新){% endif %}
                 </option>
                 {% endfor %}
             </select>
