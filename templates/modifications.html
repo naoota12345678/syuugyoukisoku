@@ -335,9 +335,11 @@
     <!-- バージョン管理改善 (追加: 2025-11-17) -->
     <script>
     // 現在表示中のバージョン番号を追跡
-    // URLパラメータから取得するか、regulation_viewから渡す
-    const urlParams = new URLSearchParams(window.location.search);
-    const viewingVersion = urlParams.get('version') || {{ regulation.current_version | default(1) }};
+    // サーバーから渡されたviewing_versionを使用
+    const viewingVersion = {{ viewing_version | default(regulation.current_version | default(1)) }};
+    
+    // デバッグ情報
+    console.log('Viewing Version from server:', viewingVersion);
 
     // 修正を適用する関数を更新
     function applyModification(modificationId, button) {

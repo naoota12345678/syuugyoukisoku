@@ -53,9 +53,13 @@
 <body>
     <div class="header">
         <h1>📄 {{ regulation.name }}
-            {% if current_version %}
+            {% if version_data %}
             <span style="font-size: 18px; color: #3498db; font-weight: normal; margin-left: 15px;">
-                (Version {{ current_version }}{% if versions and versions[0]['version'] == current_version %} - 最新{% endif %})
+                (Version {{ version_data.version_number }}{% if versions and versions[0]['version'] == version_data.version_number %} - 最新{% endif %})
+            </span>
+            {% elif viewing_version %}
+            <span style="font-size: 18px; color: #3498db; font-weight: normal; margin-left: 15px;">
+                (Version {{ viewing_version }}{% if versions and versions[0]['version'] == viewing_version %} - 最新{% endif %})
             </span>
             {% endif %}
         </h1>
@@ -105,7 +109,7 @@
             <span style="color: #666; font-size: 14px;">バージョン履歴:</span>
             <select onchange="if(this.value) window.location.href=this.value" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                 {% for ver in versions %}
-                <option value="/regulation/{{ regulation.id }}/view/version/{{ ver['version'] }}" {% if ver['version'] == current_version %}selected{% endif %}>
+                <option value="/regulation/{{ regulation.id }}/view/version/{{ ver['version'] }}" {% if ver['version'] == (version_data.version_number if version_data else viewing_version) %}selected{% endif %}>
                     v{{ ver['version'] }}{% if loop.first %} (最新){% endif %} - {{ ver['created_at'][:10] }}
                 </option>
                 {% endfor %}

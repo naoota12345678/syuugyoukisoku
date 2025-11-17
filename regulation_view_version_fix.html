@@ -1,0 +1,31 @@
+# regulation_view.htmlの修正部分を抜粋
+
+<!-- 修正提案を見るボタンの修正 -->
+<!-- 既存のボタンを以下のように変更 -->
+
+<script>
+// 現在表示中のバージョンを保持
+const currentViewingVersion = {{ version_data.version_number if version_data else regulation.current_version | default(1) }};
+
+// 修正提案を見るボタンのクリックイベント
+function goToModifications() {
+    // バージョンパラメータを付けて遷移
+    window.location.href = `/modifications/{{ regulation.id }}?version=${currentViewingVersion}`;
+}
+
+// 修正提案へのリンクを動的に更新
+document.addEventListener('DOMContentLoaded', function() {
+    // 修正提案を見るボタンがある場合
+    const modBtn = document.querySelector('a[href*="/modifications/"]');
+    if (modBtn) {
+        // href属性を更新してバージョン情報を含める
+        modBtn.href = `/modifications/{{ regulation.id }}?version=${currentViewingVersion}`;
+    }
+    
+    // または、ボタンにonclickを追加
+    const modButton = document.getElementById('modificationsButton');
+    if (modButton) {
+        modButton.onclick = goToModifications;
+    }
+});
+</script>
