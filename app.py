@@ -15,8 +15,12 @@ from pdf_parser import PDFParser
 from claude_validator import ClaudeValidator
 
 # データベースを環境変数で切り替え
-USE_FIREBASE = os.environ.get('USE_FIREBASE', 'false').lower() == 'true'
-USE_FIRESTORE = os.environ.get('USE_FIRESTORE', 'false').lower() == 'true'
+# 一時的に強制的にFirestoreを使用
+USE_FIREBASE = False
+USE_FIRESTORE = True  # 強制的にTrue
+
+print(f"[DEBUG] USE_FIRESTORE environment variable: {os.environ.get('USE_FIRESTORE', 'Not set')}")
+print(f"[DEBUG] USE_FIRESTORE forced to: {USE_FIRESTORE}")
 
 if USE_FIREBASE:
     from firebase_database import FirebaseDatabase as Database
