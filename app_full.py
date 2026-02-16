@@ -36,6 +36,14 @@ except Exception as e:
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# PDF出力ルート登録
+try:
+    from pdf_generator import add_pdf_routes
+    add_pdf_routes(app, db)
+    print("✓ PDF Generator: ENABLED")
+except Exception as e:
+    print(f"⚠ PDF Generator Error: {e}")
+
 @app.route('/')
 def index():
     return render_template('index.html')

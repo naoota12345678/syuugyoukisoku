@@ -37,6 +37,9 @@ steps:
       - '--no-use-http2'
       - '--set-env-vars'
       - 'USE_FIRESTORE=true,GOOGLE_CLOUD_PROJECT=syuugyoukisoku'
+      - '--set-secrets'
+      - 'ANTHROPIC_API_KEY=anthropic-api-key:latest'
+      - '--no-traffic'  # 新しいリビジョンにトラフィックを送らない
 
 images:
   - 'asia-northeast1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/syuugyoukisoku:$SHORT_SHA'
