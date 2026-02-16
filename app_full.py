@@ -9,6 +9,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from werkzeug.utils import secure_filename
 from database import Database
 from pdf_parser import PDFParser
+from docx_parser import DocxParser
 from claude_validator import ClaudeValidator
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ db = Database()
 # デバッグモードを環境変数で制御（開発時は PDF_PARSER_DEBUG=1 を設定）
 debug_mode = os.environ.get('PDF_PARSER_DEBUG', '0') == '1'
 pdf_parser = PDFParser(debug=debug_mode)
+docx_parser = DocxParser()
 if debug_mode:
     print("✓ PDF Parser Debug Mode: ENABLED")
 
@@ -52,48 +54,55 @@ def index():
 def upload():
     if request.method == 'POST':
         if 'pdf_file' not in request.files:
-            return jsonify({"error": "No file selected"}), 400
-        
+            return jsonify({"error": "ファイルが選択されていません"}), 400
+
         file = request.files['pdf_file']
         company_name = request.form.get('company_name', '')
         company_address = request.form.get('company_address', '')
-        
+
         if file.filename == '':
-            return jsonify({"error": "No file selected"}), 400
-        
-        if file and file.filename.endswith('.pdf'):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
+            return jsonify({"error": "ファイルが選択されていません"}), 400
+
+        filename = secure_filename(file.filename)
+        ext = os.path.splitext(filename)[1].lower()
+
+        if ext not in ('.pdf', '.docx'):
+            return jsonify({"error": "PDFまたはWordファイル(.docx)のみ対応しています"}), 400
+
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        # ファイル形式に応じてパーサーを選択
+        if ext == '.docx':
+            result = docx_parser.extract_from_docx(filepath)
+        else:
             result = pdf_parser.extract_from_pdf(filepath)
-            
-            if not result['success']:
-                return jsonify({"error": f"PDF error: {result['error']}"}), 500
-            
-            extracted_company = result['company_info'].get('company_name')
-            final_company_name = company_name or extracted_company or "Company"
-            
-            company_id = db.create_company(final_company_name, company_address)
-            regulation_id = db.create_regulation(
-                company_id=company_id,
-                reg_type='main',
-                name='Employment Rules',
-                source_type='uploaded',
-                original_filename=filename
-            )
-            db.save_regulation_content(regulation_id, result['structure'])
-            
-            return jsonify({
-                "success": True,
-                "company_id": company_id,
-                "regulation_id": regulation_id,
-                "redirect": url_for('validate_regulation', regulation_id=regulation_id)
-            })
-        
-        return jsonify({"error": "PDF only"}), 400
-    
-    return render_template('upload.html')
+
+        if not result['success']:
+            return jsonify({"error": f"解析エラー: {result['error']}"}), 500
+
+        extracted_company = result['company_info'].get('company_name')
+        final_company_name = company_name or extracted_company or "Company"
+
+        company_id = db.create_company(final_company_name, company_address)
+        regulation_id = db.create_regulation(
+            company_id=company_id,
+            reg_type='main',
+            name='Employment Rules',
+            source_type='uploaded',
+            original_filename=filename
+        )
+        db.save_regulation_content(regulation_id, result['structure'])
+
+        return jsonify({
+            "success": True,
+            "company_id": company_id,
+            "regulation_id": regulation_id,
+            "redirect": url_for('validate_regulation', regulation_id=regulation_id)
+        })
+
+    companies = db.get_all_companies() if hasattr(db, 'get_all_companies') else []
+    return render_template('upload.html', companies=companies)
 
 @app.route('/validate/<int:regulation_id>')
 def validate_regulation(regulation_id):

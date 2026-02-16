@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>PDFアップロード</title>
+    <title>ファイルアップロード</title>
     <style>
         body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
         h1 { color: #333; }
@@ -35,7 +35,7 @@
 </head>
 <body>
     <a href="/" class="back-link">← トップに戻る</a>
-    <h1>PDFアップロード</h1>
+    <h1>ファイルアップロード</h1>
     
     <form id="uploadForm" enctype="multipart/form-data">
         <div class="form-group">
@@ -75,8 +75,11 @@
         </div>
 
         <div class="form-group">
-            <label>PDFファイル *</label>
-            <input type="file" name="pdf_file" accept=".pdf" required>
+            <label>ファイル（PDF または Word） *</label>
+            <input type="file" name="pdf_file" accept=".pdf,.docx" required>
+            <small style="color: #666; display: block; margin-top: 5px;">
+                Word(.docx)推奨 - PDFより高速・高精度で処理できます
+            </small>
         </div>
 
         <button type="submit" id="submitBtn">アップロードして解析</button>
