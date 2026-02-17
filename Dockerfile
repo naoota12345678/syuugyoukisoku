@@ -1,9 +1,11 @@
 # Dockerfile for Cloud Run deployment
 FROM python:3.11-slim
 
-# Poppler（pdf2imageが必要とする）をインストール
+# Poppler（pdf2image用）とLibreOffice（.doc変換用）をインストール
 RUN apt-get update && apt-get install -y \
     poppler-utils \
+    libreoffice-core \
+    libreoffice-writer \
     && rm -rf /var/lib/apt/lists/*
 
 # 作業ディレクトリを設定

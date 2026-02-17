@@ -1,7 +1,10 @@
 # docx_parser.py
-"""Wordファイル(.docx)から就業規則を抽出するモジュール"""
+"""Wordファイル(.docx/.doc)から就業規則を抽出するモジュール"""
 
+import os
 import re
+import subprocess
+import tempfile
 from typing import Dict, List
 from docx import Document
 from structure_analyzer import StructureAnalyzer
@@ -13,11 +16,39 @@ class DocxParser:
     def __init__(self):
         self.structure_analyzer = StructureAnalyzer()
 
-    def extract_from_docx(self, docx_path: str) -> Dict:
-        """Wordファイルから就業規則を抽出"""
+    def _convert_doc_to_docx(self, doc_path: str) -> str:
+        """.docファイルをLibreOfficeで.docxに変換"""
+        print(f".doc形式を検出、.docxに変換中...")
+        output_dir = tempfile.mkdtemp()
+        subprocess.run([
+            'soffice', '--headless', '--convert-to', 'docx',
+            '--outdir', output_dir, doc_path
+        ], check=True, timeout=60)
+
+        # 変換後のファイルパスを取得
+        basename = os.path.splitext(os.path.basename(doc_path))[0]
+        docx_path = os.path.join(output_dir, basename + '.docx')
+
+        if not os.path.exists(docx_path):
+            raise FileNotFoundError(f"変換後のファイルが見つかりません: {docx_path}")
+
+        print(f".docx変換完了")
+        return docx_path
+
+    def extract_from_docx(self, file_path: str) -> Dict:
+        """Wordファイル(.docx/.doc)から就業規則を抽出"""
+        converted_path = None
         try:
-            doc = Document(docx_path)
-            print(f"Wordファイルを読み込み中: {docx_path}")
+            # .docの場合は.docxに変換
+            ext = os.path.splitext(file_path)[1].lower()
+            if ext == '.doc':
+                converted_path = self._convert_doc_to_docx(file_path)
+                target_path = converted_path
+            else:
+                target_path = file_path
+
+            doc = Document(target_path)
+            print(f"Wordファイルを読み込み中: {target_path}")
 
             # 段落からテキスト抽出
             paragraphs_text = []
@@ -39,7 +70,6 @@ class DocxParser:
                         'page': i + 1,
                         'data': table_data
                     })
-                    # 表もテキストに含める
                     paragraphs_text.append("\n[表データ検出]")
                     paragraphs_text.append("-" * 50)
                     for row_data in table_data:
@@ -74,6 +104,14 @@ class DocxParser:
                 "success": False,
                 "error": str(e)
             }
+        finally:
+            # 変換した一時ファイルを削除
+            if converted_path and os.path.exists(converted_path):
+                try:
+                    os.remove(converted_path)
+                    os.rmdir(os.path.dirname(converted_path))
+                except:
+                    pass
 
     def _extract_company_info(self, text: str) -> Dict:
         """会社情報を抽出"""

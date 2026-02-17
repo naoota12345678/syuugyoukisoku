@@ -66,14 +66,14 @@ def upload():
         filename = secure_filename(file.filename)
         ext = os.path.splitext(filename)[1].lower()
 
-        if ext not in ('.pdf', '.docx'):
-            return jsonify({"error": "PDFまたはWordファイル(.docx)のみ対応しています"}), 400
+        if ext not in ('.pdf', '.docx', '.doc'):
+            return jsonify({"error": "PDF・Word(.docx/.doc)ファイルのみ対応しています"}), 400
 
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
         # ファイル形式に応じてパーサーを選択
-        if ext == '.docx':
+        if ext in ('.docx', '.doc'):
             result = docx_parser.extract_from_docx(filepath)
         else:
             result = pdf_parser.extract_from_pdf(filepath)
