@@ -92,7 +92,12 @@ def upload():
             source_type='uploaded',
             original_filename=filename
         )
-        db.save_regulation_content(regulation_id, result['structure'])
+        db.save_regulation_content(
+            regulation_id,
+            result['structure'],
+            raw_text=result.get('raw_text', ''),
+            tables=result.get('tables')
+        )
 
         return jsonify({
             "success": True,
