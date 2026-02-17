@@ -187,6 +187,70 @@ def modification_history(regulation_id):
                          company=company,
                          history=history)
 
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    if not validator:
+        return jsonify({"success": False, "error": "AI機能が無効です（APIキー未設定）"}), 500
+
+    data = request.json
+    regulation_id = data.get('regulation_id')
+    message = data.get('message', '')
+    chat_history = data.get('chat_history', [])
+
+    if not message:
+        return jsonify({"success": False, "error": "メッセージが空です"}), 400
+
+    regulation = db.get_regulation(regulation_id)
+    if not regulation:
+        return jsonify({"success": False, "error": "規程が見つかりません"}), 404
+
+    company = db.get_company(regulation['company_id'])
+    company_name = company['name'] if company else "不明"
+
+    content = db.get_regulation_content(regulation_id)
+    raw_text = None
+    regulation_structure = None
+    if content:
+        raw_text = content.get('raw_text')
+        regulation_structure = content.get('content_json')
+
+    result = validator.chat_about_regulation(
+        regulation_structure=regulation_structure,
+        company_name=company_name,
+        user_message=message,
+        chat_history=chat_history,
+        raw_text=raw_text
+    )
+
+    if result['success']:
+        return jsonify({
+            "success": True,
+            "response": result['response'],
+            "has_modification": result.get('has_modification', False),
+            "modification": result.get('modification')
+        })
+    else:
+        return jsonify({"success": False, "error": result.get('error', '不明なエラー')}), 500
+
+@app.route('/api/add_chat_modification', methods=['POST'])
+def api_add_chat_modification():
+    data = request.json
+    regulation_id = data.get('regulation_id')
+
+    if not regulation_id:
+        return jsonify({"success": False, "error": "regulation_idが必要です"}), 400
+
+    mod_id = db.create_modification(
+        regulation_id=regulation_id,
+        article_number=data.get('article_number', ''),
+        mod_type=data.get('modification_type', 'AI相談'),
+        before_text=data.get('before_text', ''),
+        after_text=data.get('after_text', ''),
+        reason=data.get('reason', '')
+    )
+
+    return jsonify({"success": True, "modification_id": mod_id})
+
 @app.route('/test')
 def test():
     return f"""
