@@ -49,7 +49,7 @@
         .original-regulation-header h2 { color: #333; font-size: 18px; display: flex; align-items: center; gap: 10px; }
         .toggle-icon { transition: transform 0.3s; }
         .toggle-icon.collapsed { transform: rotate(-90deg); }
-        .original-regulation-content { max-height: 400px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #dee2e6; white-space: pre-wrap; font-family: 'MS Mincho', serif; line-height: 1.8; font-size: 14px; display: block; }
+        .original-regulation-content { max-height: 600px; overflow-y: auto; background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #dee2e6; white-space: pre-wrap; font-family: 'MS Mincho', serif; line-height: 2.0; font-size: 14px; display: block; }
         .original-regulation-content.collapsed { display: none; }
 
         /* チャットパネル */
@@ -103,7 +103,7 @@
             {% if raw_text %}
             <div class="original-regulation">
                 <div class="original-regulation-header" onclick="toggleOriginalRegulation()">
-                    <h2><span class="toggle-icon" id="toggleIcon">▼</span> 📄 元の就業規則（アップロードされたPDF内容）</h2>
+                    <h2><span class="toggle-icon" id="toggleIcon">▼</span> 📄 就業規則 全文</h2>
                 </div>
                 <div class="original-regulation-content" id="originalRegulationContent">{{ raw_text }}</div>
             </div>
@@ -142,8 +142,9 @@
             <div class="chat-messages" id="chatMessages">
                 <div class="chat-message ai">
                     <div class="message-bubble">
-                        こんにちは！就業規則についてご質問やご相談があればお答えします。<br>
-                        例：「副業・兼業の規定を追加したい」「会社名を○○に変更したい」
+                        こんにちは！就業規則について何でも聞いてください。<br>
+                        例：「職務発明の規定を抽出して」「第10条の内容を教えて」<br>
+                        修正したい場合：「〜を追加して」「〜を課題にして」
                     </div>
                 </div>
             </div>

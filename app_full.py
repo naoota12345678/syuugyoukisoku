@@ -141,13 +141,20 @@ def validate_regulation(regulation_id):
 @app.route('/modifications/<int:regulation_id>')
 def modifications_list(regulation_id):
     regulation = db.get_regulation(regulation_id)
+    if not regulation:
+        return render_template('error.html', error="規程が見つかりません")
     company = db.get_company(regulation['company_id'])
     modifications = db.get_pending_modifications(regulation_id)
-    
+
+    # 就業規則の全文を取得
+    content = db.get_regulation_content(regulation_id)
+    raw_text = content.get('raw_text', '') if content else ''
+
     return render_template('modifications.html',
                          regulation=regulation,
                          company=company,
-                         modifications=modifications)
+                         modifications=modifications,
+                         raw_text=raw_text)
 
 @app.route('/api/apply_modifications', methods=['POST'])
 def apply_modifications():

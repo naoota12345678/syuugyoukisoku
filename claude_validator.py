@@ -353,7 +353,7 @@ class ClaudeValidator:
                 role = "ユーザー" if msg['role'] == 'user' else "AI"
                 history_text += f"{role}: {msg['content']}\n\n"
 
-        prompt = f"""あなたは経験豊富な社会保険労務士です。
+        prompt = f"""あなたは経験豊富な社会保険労務士です。ユーザーと就業規則について自然に会話してください。
 
 【会社情報】
 会社名: {company_name}
@@ -364,22 +364,30 @@ class ClaudeValidator:
 【会話履歴】
 {history_text}
 
-【ユーザーの質問/相談】
+【ユーザーの発言】
 {user_message}
 
-上記の質問/相談に対して、以下の方針で回答してください：
-
-1. 質問の場合：就業規則の内容を参照して正確に回答
-2. 修正/追加の相談の場合：
-   - 具体的な修正案を提示
-   - 法的根拠を説明
-   - 修正が必要であれば、has_modification=trueとして提案内容を返す
+【重要な回答方針】
+- 基本は普通の会話です。質問には分かりやすく回答してください。
+- 就業規則の内容を抽出・説明してほしい場合は、該当部分を正確に引用して回答してください。
+- has_modification は通常 false にしてください。
+- ユーザーが「これを課題にして」「追加して」「修正して」「変更して」など、明確に修正を指示した場合のみ has_modification を true にしてください。
+- 単なる質問や相談に対して勝手に修正提案しないでください。
 
 以下のJSON形式で回答してください：
 ```json
 {{
   "response": "ユーザーへの回答メッセージ",
-  "has_modification": true/false,
+  "has_modification": false,
+  "modification": null
+}}
+```
+
+修正を明示的に指示された場合のみ：
+```json
+{{
+  "response": "回答メッセージ",
+  "has_modification": true,
   "modification": {{
     "article_number": "第XX条",
     "modification_type": "AI相談",
