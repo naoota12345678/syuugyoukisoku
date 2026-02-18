@@ -6,7 +6,16 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Meiryo, sans-serif; background: #f5f5f5; padding: 20px; }
-        .container { display: flex; gap: 20px; max-width: 1800px; margin: 0 auto; }
+        .container { display: flex; gap: 20px; max-width: 1900px; margin: 0 auto; }
+
+        /* 左カラム：就業規則全文 */
+        .left-panel { width: 380px; flex-shrink: 0; position: sticky; top: 20px; max-height: calc(100vh - 40px); display: flex; flex-direction: column; }
+        .left-panel-inner { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        .left-panel-header { background: #2196f3; color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; }
+        .left-panel-header h3 { font-size: 16px; }
+        .left-panel-content { flex: 1; overflow-y: auto; padding: 15px; white-space: pre-wrap; font-family: 'MS Mincho', 'Yu Mincho', serif; line-height: 1.9; font-size: 13px; color: #333; }
+
+        /* 中央カラム：修正提案 */
         .main-content { flex: 1; min-width: 0; }
         .header { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .header h1 { color: #333; margin-bottom: 10px; }
@@ -38,57 +47,45 @@
         .btn-primary { background: #28a745; color: white; }
         .btn-primary:hover { background: #218838; }
         .btn-secondary { background: #6c757d; color: white; }
-        .btn-add { background: #007bff; color: white; }
-        .btn-chat { background: #17a2b8; color: white; }
         .selected-count { color: #666; font-size: 14px; }
         .back-link { display: inline-block; color: #007bff; text-decoration: none; margin-bottom: 10px; }
 
-        /* 元の規程表示パネル */
-        .original-regulation { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .original-regulation-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; cursor: pointer; }
-        .original-regulation-header h2 { color: #333; font-size: 18px; display: flex; align-items: center; gap: 10px; }
-        .toggle-icon { transition: transform 0.3s; }
-        .toggle-icon.collapsed { transform: rotate(-90deg); }
-        .original-regulation-content { max-height: 600px; overflow-y: auto; background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #dee2e6; white-space: pre-wrap; font-family: 'MS Mincho', serif; line-height: 2.0; font-size: 14px; display: block; }
-        .original-regulation-content.collapsed { display: none; }
-
-        /* チャットパネル */
-        .chat-panel { width: 400px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: calc(100vh - 40px); position: sticky; top: 20px; }
+        /* 右カラム：チャットパネル */
+        .chat-panel { width: 380px; flex-shrink: 0; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: calc(100vh - 40px); position: sticky; top: 20px; }
         .chat-header { background: #17a2b8; color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h3 { font-size: 18px; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .chat-header h3 { font-size: 16px; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
         .chat-message { display: flex; flex-direction: column; gap: 5px; }
         .chat-message.user { align-items: flex-end; }
         .chat-message.ai { align-items: flex-start; }
-        .message-bubble { max-width: 80%; padding: 10px 15px; border-radius: 12px; line-height: 1.6; }
+        .message-bubble { max-width: 90%; padding: 10px 14px; border-radius: 12px; line-height: 1.6; font-size: 13px; }
         .chat-message.user .message-bubble { background: #007bff; color: white; }
         .chat-message.ai .message-bubble { background: #f1f3f5; color: #333; }
-        .message-time { font-size: 11px; color: #999; }
-        .chat-input-area { padding: 15px; border-top: 1px solid #dee2e6; display: flex; gap: 10px; }
-        .chat-input { flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; resize: none; height: 60px; font-family: inherit; }
-        .chat-send-btn { padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .chat-input-area { padding: 12px; border-top: 1px solid #dee2e6; display: flex; gap: 8px; }
+        .chat-input { flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; resize: none; height: 50px; font-family: inherit; }
+        .chat-send-btn { padding: 8px 16px; background: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s; font-size: 13px; }
         .chat-send-btn:hover { background: #138496; }
         .chat-send-btn:disabled { background: #6c757d; cursor: not-allowed; }
-        .chat-loading { text-align: center; padding: 10px; color: #6c757d; font-style: italic; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 8px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .modal-header { padding: 20px; border-bottom: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { color: #333; font-size: 20px; }
-        .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; line-height: 1; }
-        .modal-body { padding: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #495057; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; font-family: inherit; }
-        .form-group textarea { min-height: 120px; resize: vertical; }
-        .modal-footer { padding: 20px; border-top: 1px solid #dee2e6; display: flex; justify-content: flex-end; gap: 10px; }
+        .chat-loading { text-align: center; padding: 10px; color: #6c757d; font-style: italic; font-size: 13px; }
     </style>
 </head>
 <body>
     <a href="/" class="back-link">← トップに戻る</a>
 
     <div class="container">
+        <!-- 左カラム：就業規則全文 -->
+        {% if raw_text %}
+        <div class="left-panel">
+            <div class="left-panel-inner">
+                <div class="left-panel-header">
+                    <h3>📄 就業規則 全文</h3>
+                </div>
+                <div class="left-panel-content">{{ raw_text }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 中央カラム：修正提案 -->
         <div class="main-content">
             <div class="header">
                 <h1>修正提案</h1>
@@ -96,18 +93,8 @@
             </div>
             <div class="summary">
                 <h2>📋 検証結果: {{ modifications|length }}件の修正提案</h2>
-                <p>各修正を確認して、採用する項目にチェックを入れてください。または右のチャットでAIに相談できます。</p>
+                <p>左に就業規則全文、右のチャットでAIに相談できます。</p>
             </div>
-
-            <!-- 元の就業規則表示パネル -->
-            {% if raw_text %}
-            <div class="original-regulation">
-                <div class="original-regulation-header" onclick="toggleOriginalRegulation()">
-                    <h2><span class="toggle-icon" id="toggleIcon">▼</span> 📄 就業規則 全文</h2>
-                </div>
-                <div class="original-regulation-content" id="originalRegulationContent">{{ raw_text }}</div>
-            </div>
-            {% endif %}
 
             <form id="modForm">
                 {% for mod in modifications %}
@@ -134,7 +121,7 @@
             </form>
         </div>
 
-        <!-- チャットパネル -->
+        <!-- 右カラム：チャットパネル -->
         <div class="chat-panel">
             <div class="chat-header">
                 <h3>💬 AIに相談</h3>
@@ -167,44 +154,25 @@
         document.querySelectorAll('input[type="checkbox"]').forEach(cb=>updateCheckboxStyle(cb));
         document.getElementById('modForm').addEventListener('submit',async(e)=>{
             e.preventDefault();
-            console.log('[DEBUG] フォーム送信開始');
-
             const ids=Array.from(document.querySelectorAll('input[name="modifications"]:checked')).map(cb=>parseInt(cb.value));
-            console.log('[DEBUG] 選択されたID:', ids);
-
             if(ids.length===0&&!confirm('修正を何も選択していません。このまま保存しますか?'))return;
-
-            console.log('[DEBUG] API呼び出し開始');
             alert('処理を開始します。時間がかかる場合があります（1〜3分）。\nこのままお待ちください。');
-
             try{
                 const res=await fetch('/api/apply_modifications',{
                     method:'POST',
                     headers:{'Content-Type':'application/json'},
                     body:JSON.stringify({modification_ids:ids,regulation_id:{{regulation.id}}})
                 });
-
-                console.log('[DEBUG] API応答受信:', res.status);
                 const data=await res.json();
-                console.log('[DEBUG] データ:', data);
-
                 if(data.success){
                     const summary=data.changes_summary||[];
                     let message='修正を適用して決定版を保存しました！\n\nClaude AIが以下の変更を適用しました：\n';
-                    if(summary.length>0){
-                        summary.forEach((change,i)=>message+=`\n${i+1}. ${change}`);
-                    }else{
-                        message+='\n- 指示された修正を適用しました';
-                    }
+                    if(summary.length>0){summary.forEach((change,i)=>message+=`\n${i+1}. ${change}`);}
+                    else{message+='\n- 指示された修正を適用しました';}
                     alert(message);
                     window.location.href='/regulation/{{regulation.id}}/view';
-                }else{
-                    alert('エラー: '+(data.error||'不明なエラーが発生しました'));
-                }
-            }catch(e){
-                console.error('[ERROR]', e);
-                alert('エラー: '+e.message);
-            }
+                }else{alert('エラー: '+(data.error||'不明なエラーが発生しました'));}
+            }catch(e){alert('エラー: '+e.message);}
         });
 
         // チャット機能
@@ -212,11 +180,9 @@
             const messagesContainer = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `chat-message ${isUser ? 'user' : 'ai'}`;
-
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
             bubble.textContent = text;
-
             messageDiv.appendChild(bubble);
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -241,13 +207,10 @@
             const input = document.getElementById('chatInput');
             const sendBtn = document.getElementById('chatSendBtn');
             const message = input.value.trim();
-
             if (!message) return;
 
-            // ユーザーメッセージを表示
             addChatMessage(message, true);
             chatHistory.push({ role: 'user', content: message });
-
             input.value = '';
             sendBtn.disabled = true;
             addLoadingMessage();
@@ -262,15 +225,11 @@
                         chat_history: chatHistory
                     })
                 });
-
                 const data = await res.json();
                 removeLoadingMessage();
-
                 if (data.success) {
                     addChatMessage(data.response, false);
                     chatHistory.push({ role: 'assistant', content: data.response });
-
-                    // 提案がある場合は提案リストに追加するか確認
                     if (data.has_modification && confirm('AIの提案を修正リストに追加しますか？')) {
                         await addModificationFromChat(data.modification);
                     }
@@ -290,117 +249,46 @@
                 const res = await fetch('/api/add_chat_modification', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        regulation_id: regulationId,
-                        ...modification
-                    })
+                    body: JSON.stringify({ regulation_id: regulationId, ...modification })
                 });
-
                 const data = await res.json();
                 if (data.success) {
                     alert('提案を修正リストに追加しました！ページを更新します。');
                     location.reload();
-                } else {
-                    alert('エラー: ' + (data.error || '不明なエラー'));
-                }
-            } catch (e) {
-                alert('エラー: ' + e.message);
-            }
+                } else { alert('エラー: ' + (data.error || '不明なエラー')); }
+            } catch (e) { alert('エラー: ' + e.message); }
         }
 
-        // Enterキーで送信
         document.getElementById('chatInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendChatMessage();
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
         });
-
-        // 元の就業規則の表示切替
-        function toggleOriginalRegulation() {
-            const content = document.getElementById('originalRegulationContent');
-            const icon = document.getElementById('toggleIcon');
-
-            if (content.classList.contains('collapsed')) {
-                content.classList.remove('collapsed');
-                icon.classList.remove('collapsed');
-                icon.textContent = '▼';
-            } else {
-                content.classList.add('collapsed');
-                icon.classList.add('collapsed');
-                icon.textContent = '▶';
-            }
-        }
     </script>
 
-    <!-- バージョン管理改善 (追加: 2025-11-17) -->
     <script>
-    // 現在表示中のバージョン番号を追跡
-    // サーバーから渡されたviewing_versionを使用
     const viewingVersion = {{ viewing_version | default(regulation.current_version | default(1)) }};
-    
-    // デバッグ情報
-    console.log('Viewing Version from server:', viewingVersion);
 
-    // 修正を適用する関数を更新
     function applyModification(modificationId, button) {
         if (!confirm('この修正を適用して新しいバージョンを作成しますか？')) return;
-        
         button.disabled = true;
         button.textContent = '適用中...';
-        
-        // viewing_versionを含めて送信（重要！）
         fetch(`/api/save_modification/${modificationId}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                viewing_version: viewingVersion  // 現在表示中のバージョンを送信
-            })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ viewing_version: viewingVersion })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // 成功メッセージを詳細に
                 alert(`成功！\n\n${data.message}\n\nベースバージョン: v${data.based_on_version}\n説明: ${data.description}`);
-                
-                // 新しいバージョンにリダイレクト
-                setTimeout(() => {
-                    window.location.href = `/regulation/${regulationId}/view/version/${data.new_version}`;
-                }, 1000);
+                setTimeout(() => { window.location.href = `/regulation/${regulationId}/view/version/${data.new_version}`; }, 1000);
             } else {
                 alert('エラー: ' + data.error);
                 button.disabled = false;
                 button.textContent = '適用';
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('エラーが発生しました');
-            button.disabled = false;
-            button.textContent = '適用';
-        });
+        .catch(error => { alert('エラーが発生しました'); button.disabled = false; button.textContent = '適用'; });
     }
-
-    // 修正提案画面を開く際にバージョン情報を表示
-    document.addEventListener('DOMContentLoaded', function() {
-        // バージョン情報を表示
-        const versionInfo = document.createElement('div');
-        versionInfo.style.cssText = 'background: #e3f2fd; padding: 10px; margin-bottom: 20px; border-radius: 4px;';
-        versionInfo.innerHTML = `
-            <strong>📌 現在のベースバージョン: v${viewingVersion}</strong><br>
-            <small>このバージョンから修正を適用すると、新しいバージョンが作成されます。</small>
-        `;
-        
-        const container = document.querySelector('.container');
-        if (container && container.firstChild) {
-            container.insertBefore(versionInfo, container.firstChild.nextSibling);
-        }
-    });
-
-    // デバッグ情報をコンソールに出力
-    console.log('Viewing Version:', viewingVersion);
     </script>
 </body>
 </html>
