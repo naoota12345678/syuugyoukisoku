@@ -123,7 +123,12 @@ def validate_regulation(regulation_id):
     if not content:
         return render_template('error.html', error="Content not found")
     
-    validation_result = validator.validate_main_rules(content['content_json'])
+    # raw_textがあればそちらを使用（Wordファイル等で構造解析が不完全な場合に対応）
+    raw_text = content.get('raw_text', '')
+    if raw_text:
+        validation_result = validator.validate_main_rules_from_text(raw_text)
+    else:
+        validation_result = validator.validate_main_rules(content['content_json'])
     
     if validation_result['success']:
         modifications = validation_result['modifications']
